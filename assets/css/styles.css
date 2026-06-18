@@ -451,6 +451,8 @@ a { color: inherit; text-decoration: none; }
 .section--dark .btn--outline:hover { border-color: var(--gold); color: var(--gold); }
 .book__form { color: var(--ink); }
 .book__form h3 { margin-bottom: 16px; font-size: 1.3rem; }
+.map { margin-top: 40px; padding: 0; overflow: hidden; }
+.map iframe { display: block; width: 100%; }
 
 /* Footer */
 .footer { background: #0a0a0c; color: #c9c9d2; padding: 56px 0 0; }
