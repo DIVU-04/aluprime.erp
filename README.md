@@ -120,7 +120,7 @@ HTTPS, caching, compression and security headers. Choose one method:
 **C) Git deployment (Hostinger Business plans)**
 
 1. hPanel → **Advanced → GIT**.
-2. Repository: `https://github.com/DIVU-04/aluprime.erp.git`, Branch: `main`,
+2. Repository: `https://github.com/DIVU-04/kbgarage.git`, Branch: `main`,
    Install path: `public_html` (leave blank for repo root).
 3. Click **Create**, then **Deploy**. (For a private repo, add Hostinger's SSH
    key to the GitHub repo's Deploy Keys first.)
