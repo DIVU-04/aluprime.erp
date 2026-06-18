@@ -36,9 +36,11 @@ GoMechanic, adapted to KB Garage's black & gold brand and services.
 ├── index.html
 ├── robots.txt
 ├── sitemap.xml
+├── .htaccess               # Hostinger / Apache / LiteSpeed config
 ├── netlify.toml            # Netlify config
 ├── vercel.json             # Vercel config
 ├── Dockerfile              # self-hosting via nginx
+├── scripts/build-zip.sh    # build dist/kb-garage-site.zip for upload
 ├── .github/workflows/
 │   └── deploy.yml          # GitHub Pages CI/CD
 └── assets
@@ -90,7 +92,43 @@ docker run --rm -p 8080:80 kb-garage
 # open http://localhost:8080
 ```
 
-### 5. Plain static host
+### 5. Hostinger (shared hosting)
+
+Hostinger runs LiteSpeed (Apache-compatible), so the included `.htaccess` handles
+HTTPS, caching, compression and security headers. Choose one method:
+
+**A) hPanel File Manager (easiest)**
+
+1. Build the upload bundle: `bash scripts/build-zip.sh` → creates
+   `dist/kb-garage-site.zip`.
+2. In hPanel go to **Files → File Manager** and open **`public_html`**.
+   Delete the default `default.php`/`index.html` if present.
+3. Click **Upload** and upload `kb-garage-site.zip`.
+4. Right-click the uploaded ZIP → **Extract** (into `public_html`).
+   You should end up with `index.html`, `assets/`, `robots.txt`, `sitemap.xml`
+   and `.htaccess` directly inside `public_html`.
+5. Visit your domain. (Enable **File Manager → Settings → Show hidden files** to
+   see `.htaccess`.)
+
+**B) FTP (FileZilla)**
+
+1. In hPanel: **Files → FTP Accounts** to get host, username and password.
+2. Connect with FileZilla and open `public_html`.
+3. Upload `index.html`, `robots.txt`, `sitemap.xml`, `.htaccess` and the whole
+   `assets/` folder.
+
+**C) Git deployment (Hostinger Business plans)**
+
+1. hPanel → **Advanced → GIT**.
+2. Repository: `https://github.com/DIVU-04/aluprime.erp.git`, Branch: `main`,
+   Install path: `public_html` (leave blank for repo root).
+3. Click **Create**, then **Deploy**. (For a private repo, add Hostinger's SSH
+   key to the GitHub repo's Deploy Keys first.)
+
+After deploying, enable free SSL in hPanel (**Security → SSL**), then uncomment the
+"Force HTTPS" block in `.htaccess`.
+
+### 6. Plain static host
 
 Upload `index.html`, `robots.txt`, `sitemap.xml` and the `assets/` folder to any
 web host (cPanel, S3 + CloudFront, Firebase Hosting, etc.). No build step needed.

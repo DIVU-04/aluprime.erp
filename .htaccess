@@ -1,0 +1,38 @@
+# KB Garage — Apache/LiteSpeed config for Hostinger shared hosting.
+# Place this file in public_html alongside index.html.
+
+# Default document
+DirectoryIndex index.html
+
+# ---- Force HTTPS (uncomment after your SSL certificate is active) ----
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ---- Gzip / Brotli compression ----
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml \
+    application/javascript application/json image/svg+xml application/xml
+</IfModule>
+
+# ---- Browser caching for static assets ----
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/x-icon "access plus 30 days"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# ---- Security headers ----
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ---- Friendly 404 (optional: create 404.html to use this) ----
+# ErrorDocument 404 /404.html
