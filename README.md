@@ -133,9 +133,9 @@ After deploying, enable free SSL in hPanel (**Security → SSL**), then uncommen
 Upload `index.html`, `robots.txt`, `sitemap.xml` and the `assets/` folder to any
 web host (cPanel, S3 + CloudFront, Firebase Hosting, etc.). No build step needed.
 
-> After deploying to a real domain, update the `canonical`/Open-Graph URLs in
-> `index.html` and the `Sitemap:` / `<loc>` URLs in `robots.txt` and `sitemap.xml`
-> from `kbgarage.example` to your actual domain.
+> The site is configured for the domain **https://kbgarage.in/** (canonical /
+> Open-Graph URLs in `index.html`, plus `robots.txt` and `sitemap.xml`). If the
+> domain ever changes, update those URLs accordingly.
 
 ## Customising
 
