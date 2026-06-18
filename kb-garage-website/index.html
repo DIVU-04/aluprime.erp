@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KB Garage | Car Service & Repair in Ahmedabad — Quality Comes First</title>
+  <meta name="description" content="KB Garage, Ahmedabad — All types of car service & repair, denting & painting, AC service, washing & cleaning, 24x7 pick up & drop and insurance support. Quality Comes First." />
+  <meta name="theme-color" content="#0e0e10" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="container topbar__inner">
+      <span class="topbar__item">⏰ Open 24×7 · Insurance Claims Supported</span>
+      <a class="topbar__item topbar__call" href="tel:+917096777896">📞 +91 70 96 77 78 96</a>
+    </div>
+  </div>
+
+  <!-- Header / Nav -->
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="#home" class="brand" aria-label="KB Garage home">
+        <span class="brand__mark">KB</span>
+        <span class="brand__text">
+          <strong>KB GARAGE</strong>
+          <small>Quality Comes First</small>
+        </span>
+      </a>
+
+      <nav class="nav" id="nav">
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#why">Why Us</a>
+        <a href="#process">How It Works</a>
+        <a href="#contact">Contact</a>
+        <a href="#book" class="btn btn--gold nav__cta">Book a Service</a>
+      </nav>
+
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" id="home">
+    <div class="hero__overlay"></div>
+    <div class="container hero__inner">
+      <div class="hero__content">
+        <span class="eyebrow">★ Trusted Car Care in Ahmedabad ★</span>
+        <h1>Your Car Deserves<br /><span class="text-gold">Expert Hands</span></h1>
+        <p class="hero__sub">
+          From routine service to denting, painting & AC repair — KB Garage keeps your
+          car running like new. Free pick-up & drop, transparent pricing, and 24×7 support.
+        </p>
+        <div class="hero__actions">
+          <a href="#book" class="btn btn--gold">Book a Service</a>
+          <a href="tel:+917096777896" class="btn btn--ghost">📞 Call Now</a>
+        </div>
+        <ul class="hero__stats">
+          <li><strong>24×7</strong><span>Availability</span></li>
+          <li><strong>Free</strong><span>Pick Up & Drop</span></li>
+          <li><strong>100%</strong><span>Genuine Care</span></li>
+        </ul>
+      </div>
+
+      <!-- Booking card -->
+      <div class="booking" id="book">
+        <h3 class="booking__title">Book Your Service</h3>
+        <p class="booking__sub">Get a callback within minutes.</p>
+        <form id="bookingForm" class="booking__form" novalidate>
+          <div class="field">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Rahul Sharma" required />
+          </div>
+          <div class="field">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required />
+          </div>
+          <div class="field">
+            <label for="car">Car Model</label>
+            <input type="text" id="car" name="car" placeholder="e.g. Hyundai Creta" />
+          </div>
+          <div class="field">
+            <label for="service">Service Needed</label>
+            <select id="service" name="service" required>
+              <option value="" disabled selected>Select a service</option>
+              <option>General Car Service & Repair</option>
+              <option>Denting & Painting</option>
+              <option>AC Service & Repair</option>
+              <option>Washing & Cleaning</option>
+              <option>Insurance Claim</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn--gold btn--block">Request Callback</button>
+          <p class="booking__note">or chat with us on
+            <a href="https://wa.me/917096777896" target="_blank" rel="noopener">WhatsApp</a>
+          </p>
+          <p class="booking__success" id="bookingSuccess" hidden></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brands / trust strip -->
+  <section class="strip">
+    <div class="container strip__inner">
+      <span>We service all makes:</span>
+      <div class="strip__brands">
+        <em>Maruti Suzuki</em><em>Hyundai</em><em>Tata</em><em>Mahindra</em>
+        <em>Honda</em><em>Toyota</em><em>Kia</em><em>Volkswagen</em>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="section services" id="services">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow eyebrow--dark">What We Do</span>
+        <h2>Our Services</h2>
+        <p>Complete car care under one roof — handled by trained technicians.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <div class="card__icon">🔧</div>
+          <h3>Car Service & Repair</h3>
+          <p>All types of periodic servicing, mechanical repairs and diagnostics for every car brand.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🎨</div>
+          <h3>Denting & Painting</h3>
+          <p>Scratch removal, dent correction and showroom-quality paint jobs with perfect colour match.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">❄️</div>
+          <h3>AC Service & Repair</h3>
+          <p>Cooling checks, gas refill, compressor and complete car air-conditioning solutions.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🚿</div>
+          <h3>Washing & Cleaning</h3>
+          <p>Exterior wash, interior detailing and deep cleaning to keep your car spotless.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🚗</div>
+          <h3>Pick Up & Drop</h3>
+          <p>Free doorstep pick-up and drop so your service is hassle-free and convenient.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🛡️</div>
+          <h3>Insurance Claims</h3>
+          <p>End-to-end assistance with cashless insurance claims and accidental repairs.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why us -->
+  <section class="section why" id="why">
+    <div class="container why__grid">
+      <div class="why__intro">
+        <span class="eyebrow">Why KB Garage</span>
+        <h2>Quality Comes First</h2>
+        <p>
+          Led by Krunal Patel, KB Garage is built on honest work and genuine care. We treat
+          every car like our own — clear estimates, quality parts, and no surprise bills.
+        </p>
+        <a href="#book" class="btn btn--gold">Book Now</a>
+      </div>
+      <ul class="why__list">
+        <li><span>✔</span><div><strong>Expert Technicians</strong><p>Skilled hands for every make and model.</p></div></li>
+        <li><span>✔</span><div><strong>Transparent Pricing</strong><p>Upfront estimates with no hidden charges.</p></div></li>
+        <li><span>✔</span><div><strong>24×7 Availability</strong><p>We're here whenever you need us.</p></div></li>
+        <li><span>✔</span><div><strong>Genuine Spare Parts</strong><p>Only quality, reliable components used.</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section class="section process" id="process">
+    <div class="container">
+      <div class="section__head">
+        <span class="eyebrow eyebrow--dark">Simple & Easy</span>
+        <h2>How It Works</h2>
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step__num">1</span><h3>Book Online or Call</h3><p>Tell us your car and the service you need.</p></div>
+        <div class="step"><span class="step__num">2</span><h3>Free Pick Up</h3><p>We collect your car right from your doorstep.</p></div>
+        <div class="step"><span class="step__num">3</span><h3>Service & Repair</h3><p>Our experts get to work with quality parts.</p></div>
+        <div class="step"><span class="step__num">4</span><h3>Doorstep Delivery</h3><p>Your car returns clean, serviced and ready.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA banner -->
+  <section class="cta">
+    <div class="container cta__inner">
+      <div>
+        <h2>Need your car serviced today?</h2>
+        <p>Talk to Krunal Patel and the KB Garage team now.</p>
+      </div>
+      <div class="cta__actions">
+        <a href="tel:+917096777896" class="btn btn--gold">📞 +91 70 96 77 78 96</a>
+        <a href="https://wa.me/917096777896" target="_blank" rel="noopener" class="btn btn--ghost">WhatsApp Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section contact" id="contact">
+    <div class="container contact__grid">
+      <div class="contact__info">
+        <span class="eyebrow">Get In Touch</span>
+        <h2>Visit Our Garage</h2>
+        <ul class="contact__list">
+          <li><span>👤</span><div><strong>Krunal Patel</strong><p>Owner</p></div></li>
+          <li><span>📞</span><div><strong>Phone</strong><p><a href="tel:+917096777896">+91 70 96 77 78 96</a></p></div></li>
+          <li><span>📍</span><div><strong>Address</strong><p>Near Seventh Parisar, Opp. Vishnudhara Garden, B/h. Jaguar Showroom, R.C.C. Road, S.G. Highway, Gota, Ahmedabad — 382481</p></div></li>
+          <li><span>⏰</span><div><strong>Hours</strong><p>Open 24×7</p></div></li>
+        </ul>
+      </div>
+      <div class="contact__map">
+        <iframe
+          title="KB Garage location"
+          src="https://www.google.com/maps?q=Gota,+Ahmedabad,+S.G.+Highway&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <span class="brand__mark">KB</span>
+        <div>
+          <strong>KB GARAGE</strong>
+          <small>Quality Comes First</small>
+        </div>
+      </div>
+      <nav class="footer__links">
+        <a href="#services">Services</a>
+        <a href="#why">Why Us</a>
+        <a href="#process">How It Works</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <p class="footer__copy">© <span id="year"></span> KB Garage, Ahmedabad. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp -->
+  <a class="fab" href="https://wa.me/917096777896" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
+
+  <script src="script.js"></script>
+</body>
+</html>
