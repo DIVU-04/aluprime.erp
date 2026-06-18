@@ -13,9 +13,11 @@ GoMechanic, adapted to KB Garage's black & gold brand and services.
 - Services grid (service & repair, denting & painting, AC, washing, pick-up & drop, insurance)
 - Why-us, How-it-works and Pricing sections
 - Customer reviews
+- FAQ section with an accordion (one item open at a time)
 - Booking / contact section with business details
 - Booking forms that open **WhatsApp** with the customer's details pre-filled
-- Floating WhatsApp & Call buttons
+- Floating WhatsApp & Call buttons + a back-to-top button
+- SEO ready: meta description/keywords, Open Graph & Twitter cards, inline SVG favicon and `AutoRepair` JSON-LD structured data
 - Fully responsive (desktop, tablet, mobile)
 - No build step — pure HTML, CSS and vanilla JS
 

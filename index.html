@@ -6,10 +6,50 @@
   <meta name="theme-color" content="#0d0d0f" />
   <title>KB Garage | Car Service & Repair in Ahmedabad</title>
   <meta name="description" content="KB Garage, Gota, Ahmedabad — All types of car service & repair, denting & painting, AC service, washing & 24x7 pickup and drop. Quality comes first." />
+  <meta name="keywords" content="car service Ahmedabad, car repair Gota, denting painting, AC service, car wash, KB Garage" />
+  <link rel="canonical" href="https://kbgarage.example/" />
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="KB Garage | Car Service & Repair in Ahmedabad" />
+  <meta property="og:description" content="Complete car care in Gota, Ahmedabad — service, repair, denting & painting, AC, washing and 24×7 pick-up & drop. Quality comes first." />
+  <meta property="og:locale" content="en_IN" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="KB Garage | Car Service & Repair in Ahmedabad" />
+  <meta name="twitter:description" content="Complete car care in Gota, Ahmedabad. Quality comes first." />
+
+  <!-- Favicon (inline SVG, no extra request) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0d0f'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial,sans-serif' font-weight='700' font-size='30' fill='%23f5b921'%3EKB%3C/text%3E%3C/svg%3E" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <!-- Local business structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AutoRepair",
+    "name": "KB Garage",
+    "image": "https://kbgarage.example/og.jpg",
+    "description": "Car service & repair, denting & painting, AC service, washing and 24×7 pick-up & drop in Gota, Ahmedabad.",
+    "slogan": "Quality Comes First",
+    "telephone": "+91-70-96-77-78-96",
+    "url": "https://kbgarage.example/",
+    "openingHours": "Mo-Su 00:00-23:59",
+    "priceRange": "₹₹",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Near Seventh Parisar, Opp. Vishnudhara Garden, B/h. Jaguar Showroom, R.C.C. Road, S.G. Highway, Gota",
+      "addressLocality": "Ahmedabad",
+      "addressRegion": "Gujarat",
+      "postalCode": "382481",
+      "addressCountry": "IN"
+    },
+    "founder": "Krunal Patel"
+  }
+  </script>
 </head>
 <body>
   <!-- Top bar -->
@@ -40,6 +80,7 @@
         <a href="#how">How It Works</a>
         <a href="#pricing">Pricing</a>
         <a href="#reviews">Reviews</a>
+        <a href="#faq">FAQ</a>
         <a href="#contact">Contact</a>
         <a href="#book" class="btn btn--primary nav__cta">Book a Service</a>
       </nav>
@@ -297,6 +338,55 @@
     </div>
   </section>
 
+  <!-- FAQ -->
+  <section class="section section--alt" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <span class="kicker">Good To Know</span>
+        <h2>Frequently Asked Questions</h2>
+        <p>Everything you need to know before booking your car service.</p>
+      </div>
+      <div class="faq" data-faq>
+        <details class="faq__item">
+          <summary>Do you offer free pick-up and drop?</summary>
+          <div class="faq__body">
+            <p>Yes. We collect your car from your home or office and return it after service at no extra cost across Gota and nearby areas of Ahmedabad.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>Which car brands do you service?</summary>
+          <div class="faq__body">
+            <p>Our technicians are trained across all major brands — Maruti Suzuki, Hyundai, Tata, Mahindra, Honda, Toyota, Kia, Volkswagen, Skoda and more.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>How do I get a price estimate?</summary>
+          <div class="faq__body">
+            <p>Fill the quick form or message us on WhatsApp with your car details. We share an indicative quote upfront and a final quote after inspection — no hidden charges.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>Do you handle insurance claims?</summary>
+          <div class="faq__body">
+            <p>Absolutely. We provide end-to-end assistance with cashless insurance claims and accident repairs, including paperwork and coordination with your insurer.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>Are you really open 24×7?</summary>
+          <div class="faq__body">
+            <p>Yes — we offer 24×7 support for breakdowns and emergencies. For routine service, booking a slot in advance helps us serve you faster.</p>
+          </div>
+        </details>
+        <details class="faq__item">
+          <summary>Do you use genuine spare parts?</summary>
+          <div class="faq__body">
+            <p>We use genuine and trusted spare parts sourced from reliable suppliers, and we always confirm with you before replacing any part.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
   <!-- Booking + Contact -->
   <section class="section section--dark" id="book">
     <div class="container book">
@@ -363,6 +453,7 @@
         <a href="#how">How It Works</a>
         <a href="#pricing">Pricing</a>
         <a href="#reviews">Reviews</a>
+        <a href="#faq">FAQ</a>
         <a href="#book">Book Now</a>
       </div>
       <div class="footer__col">
@@ -383,6 +474,7 @@
   <!-- Floating actions -->
   <a href="https://wa.me/917096777896" class="fab fab--whatsapp" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">💬</a>
   <a href="tel:+917096777896" class="fab fab--call" aria-label="Call now">📞</a>
+  <button class="to-top" id="toTop" aria-label="Back to top">↑</button>
 
   <script src="assets/js/script.js"></script>
 </body>

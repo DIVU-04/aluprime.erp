@@ -51,6 +51,34 @@
     });
   }
 
+  // FAQ accordion — keep only one item open at a time
+  var faq = document.querySelector("[data-faq]");
+  if (faq) {
+    var items = faq.querySelectorAll("details");
+    items.forEach(function (item) {
+      item.addEventListener("toggle", function () {
+        if (item.open) {
+          items.forEach(function (other) {
+            if (other !== item) other.open = false;
+          });
+        }
+      });
+    });
+  }
+
+  // Back-to-top button
+  var toTop = document.getElementById("toTop");
+  if (toTop) {
+    var onScroll = function () {
+      toTop.classList.toggle("show", window.pageYOffset > 600);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    toTop.addEventListener("click", function () {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
   // Booking / quote forms -> open WhatsApp with prefilled details
   var WHATSAPP = "917096777896";
   var forms = document.querySelectorAll("[data-quote]");
