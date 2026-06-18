@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" role="img" aria-label="KB Garage">
+  <defs>
+    <linearGradient id="kbGoldH" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7c945"/>
+      <stop offset="100%" stop-color="#d99a10"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0d0d0f"/>
+  <rect x="3.5" y="3.5" width="57" height="57" rx="13" fill="none" stroke="url(#kbGoldH)" stroke-width="2.5"/>
+  <text x="32" y="35" text-anchor="middle" dominant-baseline="central"
+        font-family="Oswald, Arial, sans-serif" font-weight="700" font-size="26"
+        letter-spacing="-0.5" fill="url(#kbGoldH)">KB</text>
+  <rect x="14" y="46" width="36" height="3.4" rx="1.7" fill="#3a3a42"/>
+  <rect x="27" y="46" width="10" height="3.4" rx="1.7" fill="url(#kbGoldH)"/>
+  <text x="80" y="30" font-family="Oswald, Arial, sans-serif" font-weight="700" font-size="24"
+        letter-spacing="1.5" fill="#ffffff">KB GARAGE</text>
+  <text x="81" y="48" font-family="Poppins, Arial, sans-serif" font-weight="600" font-size="10.5"
+        letter-spacing="3" fill="url(#kbGoldH)">QUALITY COMES FIRST</text>
+</svg>
