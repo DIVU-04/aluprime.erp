@@ -23,14 +23,19 @@
     });
   }
 
-  // Scroll reveal animation
-  var revealTargets = document.querySelectorAll(
-    ".card, .step, .section__head, .why__content, .hero__card, .why__media"
-  );
+  // Scroll reveal animation (skipped when the user prefers reduced motion)
+  var prefersReducedMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var revealTargets = prefersReducedMotion
+    ? []
+    : document.querySelectorAll(
+        ".card, .step, .section__head, .why__content, .hero__card, .why__media"
+      );
   revealTargets.forEach(function (el) {
     el.classList.add("reveal");
   });
-  if ("IntersectionObserver" in window) {
+  if (revealTargets.length && "IntersectionObserver" in window) {
     var io = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
@@ -76,6 +81,42 @@
     onScroll();
     toTop.addEventListener("click", function () {
       window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  // Scroll-spy — highlight the nav link for the section in view
+  var navAnchors = links
+    ? Array.prototype.slice.call(links.querySelectorAll('a[href^="#"]'))
+    : [];
+  var spyTargets = navAnchors
+    .map(function (a) {
+      var id = a.getAttribute("href").slice(1);
+      var section = id ? document.getElementById(id) : null;
+      return section ? { link: a, section: section } : null;
+    })
+    .filter(Boolean);
+
+  if (spyTargets.length && "IntersectionObserver" in window) {
+    var setActive = function (link) {
+      spyTargets.forEach(function (t) {
+        t.link.classList.toggle("active", t.link === link);
+      });
+    };
+    var spy = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var match = spyTargets.filter(function (t) {
+              return t.section === entry.target;
+            })[0];
+            if (match) setActive(match.link);
+          }
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
+    );
+    spyTargets.forEach(function (t) {
+      spy.observe(t.section);
     });
   }
 
