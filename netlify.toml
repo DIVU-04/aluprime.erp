@@ -1,0 +1,11 @@
+# Netlify deployment config for the KB Garage static site.
+# No build step is needed — the site is plain HTML/CSS/JS served from the repo root.
+[build]
+  publish = "."
+  command = ""
+
+# Long-cache static assets; the cache-busting query strings handle updates.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
