@@ -1,242 +1,482 @@
-const vehicles = [
-  { id: "bike", icon: "🏍️", name: "Bike", etaBase: 3, baseFare: 28, perKm: 10 },
-  { id: "auto", icon: "🛺", name: "Auto", etaBase: 4, baseFare: 40, perKm: 14 },
-  { id: "mini", icon: "🚗", name: "Mini", etaBase: 5, baseFare: 55, perKm: 17 },
-  { id: "sedan", icon: "🚘", name: "Sedan", etaBase: 7, baseFare: 80, perKm: 21 },
-];
+const state = {
+  token: localStorage.getItem("ridenow_token") || null,
+  user: null,
+  vehicles: [],
+  selectedVehicleId: "bike",
+  estimate: null,
+  activeRide: null,
+  socket: null,
+  map: null,
+  markers: {
+    pickup: null,
+    drop: null,
+    driver: null,
+    route: null,
+  },
+};
 
-const STORAGE_KEY = "ridenow_recent_rides";
-const trackerSteps = [
-  { label: "Finding nearby captain...", progress: 20, delay: 2200 },
-  { label: "Driver assigned and heading to pickup", progress: 45, delay: 3200 },
-  { label: "Driver reached pickup point", progress: 65, delay: 3600 },
-  { label: "Trip started", progress: 85, delay: 4200 },
-  { label: "Trip completed", progress: 100, delay: 2200 },
-];
+const $ = (selector) => document.querySelector(selector);
 
-const form = document.querySelector("#ride-form");
-const pickupInput = document.querySelector("#pickup");
-const dropInput = document.querySelector("#drop");
-const paymentInput = document.querySelector("#payment");
-const vehicleOptions = document.querySelector("#vehicle-options");
-const distanceOutput = document.querySelector("#distance-output");
-const etaOutput = document.querySelector("#eta-output");
-const fareOutput = document.querySelector("#fare-output");
-const formMessage = document.querySelector("#form-message");
-const statusPanel = document.querySelector("#status-panel");
-const historyList = document.querySelector("#history-list");
-const chips = document.querySelectorAll(".chip");
+const els = {
+  authCard: $("#auth-card"),
+  authForm: $("#auth-form"),
+  authUsername: $("#auth-username"),
+  authPassword: $("#auth-password"),
+  authSubmit: $("#auth-submit"),
+  authMessage: $("#auth-message"),
+  tabs: document.querySelectorAll(".tab"),
+  userBox: $("#user-box"),
+  usernameLabel: $("#username-label"),
+  logoutBtn: $("#logout-btn"),
+  bookingCard: $("#booking-card"),
+  mapCard: $("#map-card"),
+  trackerCard: $("#tracker-card"),
+  historyCard: $("#history-card"),
+  rideForm: $("#ride-form"),
+  pickup: $("#pickup"),
+  drop: $("#drop"),
+  payment: $("#payment"),
+  vehicleOptions: $("#vehicle-options"),
+  distanceOutput: $("#distance-output"),
+  etaOutput: $("#eta-output"),
+  fareOutput: $("#fare-output"),
+  bookBtn: $("#book-btn"),
+  formMessage: $("#form-message"),
+  statusPanel: $("#status-panel"),
+  historyList: $("#history-list"),
+  chips: document.querySelectorAll(".chip"),
+  mapEl: $("#map"),
+};
 
-let selectedVehicle = vehicles[0];
-let activeTripTimer = null;
+let authMode = "login";
+let estimateTimer = null;
 
-function pseudoDistance(pickup, drop) {
-  const source = `${pickup}|${drop}`.trim().toLowerCase();
-  let total = 0;
-  for (let i = 0; i < source.length; i += 1) {
-    total += source.charCodeAt(i) * (i + 1);
+async function api(path, { method = "GET", body, auth = false } = {}) {
+  const headers = { "Content-Type": "application/json" };
+  if (auth && state.token) headers.Authorization = `Bearer ${state.token}`;
+  const res = await fetch(path, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === mode));
+  els.authSubmit.textContent = mode === "signup" ? "Create account" : "Login";
+  els.authMessage.textContent = "";
+}
+
+function showAuthedUi() {
+  els.authCard.classList.add("hidden");
+  els.userBox.classList.remove("hidden");
+  els.bookingCard.classList.remove("hidden");
+  els.mapCard.classList.remove("hidden");
+  els.trackerCard.classList.remove("hidden");
+  els.historyCard.classList.remove("hidden");
+  els.usernameLabel.textContent = state.user ? `@${state.user.username}` : "";
+  ensureMap();
+}
+
+function showLoggedOutUi() {
+  els.authCard.classList.remove("hidden");
+  els.userBox.classList.add("hidden");
+  els.bookingCard.classList.add("hidden");
+  els.mapCard.classList.add("hidden");
+  els.trackerCard.classList.add("hidden");
+  els.historyCard.classList.add("hidden");
+}
+
+async function loadCurrentUser() {
+  if (!state.token) return false;
+  try {
+    const { user } = await api("/api/me", { auth: true });
+    state.user = user;
+    return true;
+  } catch {
+    localStorage.removeItem("ridenow_token");
+    state.token = null;
+    state.user = null;
+    return false;
   }
-  const raw = (total % 1600) / 100 + 1.2;
-  return Number(raw.toFixed(1));
 }
 
-function computeEstimate(vehicle, distance) {
-  const surge = distance > 10 ? 1.18 : 1;
-  const fare = Math.round((vehicle.baseFare + distance * vehicle.perKm + 8) * surge);
-  const eta = Math.max(4, Math.round(vehicle.etaBase + distance * 1.3));
-  return { fare, eta };
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  const username = els.authUsername.value.trim();
+  const password = els.authPassword.value;
+  if (!username || password.length < 4) {
+    els.authMessage.style.color = "var(--warning)";
+    els.authMessage.textContent = "Enter a username and a 4+ char password.";
+    return;
+  }
+  const endpoint = authMode === "signup" ? "/api/auth/signup" : "/api/auth/login";
+  els.authSubmit.disabled = true;
+  try {
+    const data = await api(endpoint, { method: "POST", body: { username, password } });
+    state.token = data.token;
+    state.user = data.user;
+    localStorage.setItem("ridenow_token", state.token);
+    els.authMessage.textContent = "";
+    await afterLogin();
+  } catch (err) {
+    els.authMessage.style.color = "var(--warning)";
+    els.authMessage.textContent = err.message;
+  } finally {
+    els.authSubmit.disabled = false;
+  }
 }
 
-function activeDistance() {
-  if (!pickupInput.value.trim() || !dropInput.value.trim()) return 0;
-  return pseudoDistance(pickupInput.value, dropInput.value);
+function handleLogout() {
+  localStorage.removeItem("ridenow_token");
+  state.token = null;
+  state.user = null;
+  state.activeRide = null;
+  if (state.socket) {
+    state.socket.close();
+    state.socket = null;
+  }
+  showLoggedOutUi();
+}
+
+async function loadVehicles() {
+  const { vehicles } = await api("/api/vehicles");
+  state.vehicles = vehicles;
+  renderVehicles();
 }
 
 function renderVehicles() {
-  vehicleOptions.innerHTML = "";
-  vehicles.forEach((vehicle) => {
-    const distance = activeDistance();
-    const estimate = computeEstimate(vehicle, distance || 3.5);
+  els.vehicleOptions.innerHTML = "";
+  state.vehicles.forEach((vehicle) => {
+    const est = state.estimate?.options?.find((o) => o.id === vehicle.id);
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `vehicle-card ${selectedVehicle.id === vehicle.id ? "selected" : ""}`;
+    button.className = `vehicle-card ${state.selectedVehicleId === vehicle.id ? "selected" : ""}`;
     button.dataset.id = vehicle.id;
+    const icon =
+      vehicle.id === "bike"
+        ? "🏍️"
+        : vehicle.id === "auto"
+          ? "🛺"
+          : vehicle.id === "mini"
+            ? "🚗"
+            : "🚘";
     button.innerHTML = `
-      <strong>${vehicle.icon} ${vehicle.name}</strong>
-      <small>ETA ${estimate.eta} min</small>
-      <small>from ₹${estimate.fare}</small>
+      <strong>${icon} ${vehicle.name}</strong>
+      <small>${est ? `ETA ${est.eta} min` : "Enter route for ETA"}</small>
+      <small>${est ? `from ₹${est.fare}` : `from ₹${vehicle.baseFare}`}</small>
     `;
     button.addEventListener("click", () => {
-      selectedVehicle = vehicle;
+      state.selectedVehicleId = vehicle.id;
       renderVehicles();
-      updateSummary();
+      renderFareSummary();
     });
-    vehicleOptions.appendChild(button);
+    els.vehicleOptions.appendChild(button);
   });
 }
 
-function updateSummary() {
-  const distance = activeDistance();
-  if (!distance) {
-    distanceOutput.textContent = "0 km";
-    etaOutput.textContent = "0 min";
-    fareOutput.textContent = "₹0";
+function renderFareSummary() {
+  const options = state.estimate?.options || [];
+  const chosen = options.find((o) => o.id === state.selectedVehicleId);
+  if (!state.estimate || !chosen) {
+    els.distanceOutput.textContent = "0 km";
+    els.etaOutput.textContent = "0 min";
+    els.fareOutput.textContent = "₹0";
     return;
   }
-
-  const estimate = computeEstimate(selectedVehicle, distance);
-  distanceOutput.textContent = `${distance} km`;
-  etaOutput.textContent = `${estimate.eta} min`;
-  fareOutput.textContent = `₹${estimate.fare}`;
+  els.distanceOutput.textContent = `${state.estimate.distanceKm} km`;
+  els.etaOutput.textContent = `${chosen.eta} min`;
+  els.fareOutput.textContent = `₹${chosen.fare}`;
 }
 
-function getHistory() {
+async function refreshEstimate() {
+  const pickup = els.pickup.value.trim();
+  const drop = els.drop.value.trim();
+  if (!pickup || !drop) {
+    state.estimate = null;
+    renderVehicles();
+    renderFareSummary();
+    return;
+  }
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
+    state.estimate = await api("/api/estimate", {
+      method: "POST",
+      body: { pickup, drop, vehicleId: state.selectedVehicleId },
+    });
+    renderVehicles();
+    renderFareSummary();
+    updateMapForEstimate();
+  } catch {}
 }
 
-function setHistory(entries) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+function debounceEstimate() {
+  if (estimateTimer) clearTimeout(estimateTimer);
+  estimateTimer = setTimeout(refreshEstimate, 300);
 }
 
-function drawHistory() {
-  const history = getHistory();
-  historyList.innerHTML = "";
-  if (!history.length) {
-    historyList.innerHTML = '<li class="empty">No rides yet. Book your first trip.</li>';
+async function handleBookRide(event) {
+  event.preventDefault();
+  const pickup = els.pickup.value.trim();
+  const drop = els.drop.value.trim();
+  if (!pickup || !drop) {
+    els.formMessage.style.color = "var(--warning)";
+    els.formMessage.textContent = "Provide both pickup and drop locations.";
     return;
   }
 
-  history.forEach((ride) => {
-    const item = document.createElement("li");
-    item.innerHTML = `
-      <strong>${ride.vehicle} • ₹${ride.fare}</strong>
-      <span>${ride.pickup} → ${ride.drop}</span>
-      <span class="meta">${ride.distance} km • ${ride.payment} • ${ride.date}</span>
-    `;
-    historyList.appendChild(item);
-  });
+  els.bookBtn.disabled = true;
+  els.formMessage.style.color = "var(--accent-2)";
+  els.formMessage.textContent = "Requesting ride...";
+
+  try {
+    const { ride } = await api("/api/rides", {
+      method: "POST",
+      auth: true,
+      body: {
+        pickup,
+        drop,
+        vehicleId: state.selectedVehicleId,
+        payment: els.payment.value,
+      },
+    });
+    state.activeRide = ride;
+    els.formMessage.textContent = `Ride booked! ${ride.vehicleName} will arrive soon.`;
+    renderActiveRide(ride);
+    updateMapForRide(ride);
+    ensureSocket();
+  } catch (err) {
+    els.formMessage.style.color = "var(--warning)";
+    els.formMessage.textContent = err.message;
+  } finally {
+    els.bookBtn.disabled = false;
+  }
 }
 
-function showTrackerSkeleton(ride) {
-  statusPanel.classList.remove("empty");
-  statusPanel.innerHTML = `
+const STATUS_LABEL = {
+  searching: "Finding a nearby captain...",
+  assigned: "Driver assigned and heading to pickup",
+  arriving: "Driver is on the way",
+  arrived: "Driver has reached your pickup",
+  in_progress: "Trip in progress",
+  completed: "Trip completed",
+  cancelled: "Trip cancelled",
+};
+
+const STATUS_PROGRESS = {
+  searching: 15,
+  assigned: 35,
+  arriving: 50,
+  arrived: 65,
+  in_progress: 85,
+  completed: 100,
+  cancelled: 100,
+};
+
+function renderActiveRide(ride) {
+  els.statusPanel.classList.remove("empty");
+  const initial = ride.driver ? ride.driver.name.charAt(0) : "?";
+  els.statusPanel.innerHTML = `
     <div class="status-top">
       <div>
-        <strong>${ride.vehicle}</strong>
-        <div class="meta">${ride.pickup} → ${ride.drop}</div>
+        <strong>${ride.vehicleName}</strong>
+        <div class="meta">${ride.pickup.label} → ${ride.drop.label}</div>
       </div>
-      <div class="meta">Fare ₹${ride.fare}</div>
+      <div class="meta">Fare ₹${ride.fare} • ${ride.distanceKm} km</div>
     </div>
-    <p id="status-text" class="status-text">Request accepted</p>
-    <div class="progress">
-      <div id="progress-bar" class="progress-bar"></div>
+    <p id="status-text" class="status-text">${STATUS_LABEL[ride.status] || ride.status}</p>
+    <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+    <div class="driver-box ${ride.driver ? "" : "hidden"}">
+      <div class="driver-avatar">${initial}</div>
+      <div>
+        <strong>${ride.driver?.name || ""}</strong>
+        <div class="meta">
+          ${ride.driver ? `${ride.driver.vehicleNumber} • ⭐ ${ride.driver.rating}` : ""}
+        </div>
+      </div>
     </div>
   `;
+  const bar = document.getElementById("progress-bar");
+  if (bar) bar.style.width = `${STATUS_PROGRESS[ride.status] || 0}%`;
 }
 
-function updateTracker(step) {
-  const statusText = document.querySelector("#status-text");
-  const progressBar = document.querySelector("#progress-bar");
-  if (!statusText || !progressBar) return;
-  statusText.textContent = step.label;
-  progressBar.style.width = `${step.progress}%`;
-}
-
-function runTripLifecycle(ride) {
-  if (activeTripTimer) clearTimeout(activeTripTimer);
-  showTrackerSkeleton(ride);
-
-  let index = 0;
-  const tick = () => {
-    const step = trackerSteps[index];
-    updateTracker(step);
-
-    if (index === trackerSteps.length - 1) {
-      const history = getHistory();
-      history.unshift({
-        vehicle: ride.vehicle,
-        pickup: ride.pickup,
-        drop: ride.drop,
-        distance: ride.distance,
-        payment: ride.payment,
-        fare: ride.fare,
-        date: new Date().toLocaleString(),
-      });
-      setHistory(history.slice(0, 8));
-      drawHistory();
-      formMessage.style.color = "var(--success)";
-      formMessage.textContent = "Ride completed and saved in history.";
+async function loadHistory() {
+  try {
+    const { rides } = await api("/api/rides", { auth: true });
+    els.historyList.innerHTML = "";
+    if (!rides.length) {
+      els.historyList.innerHTML = '<li class="empty">No rides yet. Book your first trip.</li>';
       return;
     }
-
-    index += 1;
-    activeTripTimer = setTimeout(tick, step.delay);
-  };
-
-  tick();
+    rides.forEach((ride) => {
+      const item = document.createElement("li");
+      const when = new Date(ride.createdAt).toLocaleString();
+      item.innerHTML = `
+        <strong>${ride.vehicleName} • ₹${ride.fare}</strong>
+        <span>${ride.pickup.label} → ${ride.drop.label}</span>
+        <span class="meta">${ride.distanceKm} km • ${ride.payment} • ${when} • ${ride.status}</span>
+      `;
+      els.historyList.appendChild(item);
+    });
+  } catch {}
 }
 
-function validateForm() {
-  if (!pickupInput.value.trim() || !dropInput.value.trim()) {
-    return "Please provide pickup and destination locations.";
-  }
-  if (pickupInput.value.trim().toLowerCase() === dropInput.value.trim().toLowerCase()) {
-    return "Pickup and drop should be different locations.";
-  }
-  return "";
+function ensureSocket() {
+  if (state.socket && state.socket.readyState <= 1) return;
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  const socket = new WebSocket(`${proto}://${location.host}/ws?token=${encodeURIComponent(state.token)}`);
+  socket.addEventListener("message", (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.type === "ride:update") {
+        state.activeRide = msg.ride;
+        renderActiveRide(msg.ride);
+        updateMapForRide(msg.ride);
+        if (msg.ride.status === "completed") {
+          loadHistory();
+        }
+      }
+    } catch {}
+  });
+  socket.addEventListener("close", () => {
+    state.socket = null;
+  });
+  state.socket = socket;
 }
 
-function handleBookRide(event) {
-  event.preventDefault();
-  const error = validateForm();
-  if (error) {
-    formMessage.style.color = "var(--warning)";
-    formMessage.textContent = error;
-    return;
-  }
-
-  const distance = activeDistance();
-  const estimate = computeEstimate(selectedVehicle, distance);
-  const ride = {
-    pickup: pickupInput.value.trim(),
-    drop: dropInput.value.trim(),
-    vehicle: selectedVehicle.name,
-    distance,
-    fare: estimate.fare,
-    payment: paymentInput.value,
-  };
-
-  formMessage.style.color = "var(--accent-2)";
-  formMessage.textContent = `Ride booked! ${selectedVehicle.name} will arrive in ~${estimate.eta} min.`;
-  runTripLifecycle(ride);
+function ensureMap() {
+  if (state.map || !window.L) return;
+  state.map = L.map(els.mapEl, { zoomControl: true }).setView([12.9716, 77.5946], 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap",
+  }).addTo(state.map);
+  setTimeout(() => state.map && state.map.invalidateSize(), 100);
 }
 
-chips.forEach((chip) => {
-  chip.addEventListener("click", () => {
-    const value = chip.dataset.fill || "";
-    if (!pickupInput.value.trim()) {
-      pickupInput.value = value;
-    } else {
-      dropInput.value = value;
+function clearMapMarkers() {
+  ["pickup", "drop", "driver", "route"].forEach((key) => {
+    if (state.markers[key]) {
+      state.map.removeLayer(state.markers[key]);
+      state.markers[key] = null;
     }
-    updateSummary();
-    renderVehicles();
   });
-});
+}
 
-[pickupInput, dropInput].forEach((input) => {
-  input.addEventListener("input", () => {
-    updateSummary();
-    renderVehicles();
+function pinIcon(color) {
+  return L.divIcon({
+    className: "",
+    html: `<div style="background:${color};width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px ${color};"></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   });
-});
+}
 
-form.addEventListener("submit", handleBookRide);
+function updateMapForEstimate() {
+  ensureMap();
+  if (!state.map || !state.estimate) return;
+  clearMapMarkers();
+  const p = state.estimate.pickup;
+  const d = state.estimate.drop;
+  state.markers.pickup = L.marker([p.lat, p.lng], { icon: pinIcon("#64dfdf") })
+    .addTo(state.map)
+    .bindPopup(`Pickup: ${p.label}`);
+  state.markers.drop = L.marker([d.lat, d.lng], { icon: pinIcon("#ffd93d") })
+    .addTo(state.map)
+    .bindPopup(`Drop: ${d.label}`);
+  state.markers.route = L.polyline(
+    [
+      [p.lat, p.lng],
+      [d.lat, d.lng],
+    ],
+    { color: "#5b7af7", weight: 4, opacity: 0.7, dashArray: "6,8" }
+  ).addTo(state.map);
+  state.map.fitBounds(state.markers.route.getBounds(), { padding: [40, 40] });
+}
 
-renderVehicles();
-updateSummary();
-drawHistory();
+function updateMapForRide(ride) {
+  ensureMap();
+  if (!state.map) return;
+  if (!state.markers.pickup) {
+    state.markers.pickup = L.marker([ride.pickup.lat, ride.pickup.lng], {
+      icon: pinIcon("#64dfdf"),
+    })
+      .addTo(state.map)
+      .bindPopup(`Pickup: ${ride.pickup.label}`);
+  }
+  if (!state.markers.drop) {
+    state.markers.drop = L.marker([ride.drop.lat, ride.drop.lng], {
+      icon: pinIcon("#ffd93d"),
+    })
+      .addTo(state.map)
+      .bindPopup(`Drop: ${ride.drop.label}`);
+  }
+  if (!state.markers.route) {
+    state.markers.route = L.polyline(
+      [
+        [ride.pickup.lat, ride.pickup.lng],
+        [ride.drop.lat, ride.drop.lng],
+      ],
+      { color: "#5b7af7", weight: 4, opacity: 0.7, dashArray: "6,8" }
+    ).addTo(state.map);
+  }
+
+  if (ride.driverLocation) {
+    const pos = [ride.driverLocation.lat, ride.driverLocation.lng];
+    if (!state.markers.driver) {
+      state.markers.driver = L.marker(pos, { icon: pinIcon("#ff914d") })
+        .addTo(state.map)
+        .bindPopup("Driver");
+    } else {
+      state.markers.driver.setLatLng(pos);
+    }
+  }
+
+  if (state.markers.route) {
+    state.map.fitBounds(state.markers.route.getBounds(), { padding: [40, 40] });
+  }
+}
+
+async function afterLogin() {
+  showAuthedUi();
+  await loadVehicles();
+  await loadHistory();
+  ensureSocket();
+}
+
+function attachEvents() {
+  els.tabs.forEach((tab) => tab.addEventListener("click", () => setAuthMode(tab.dataset.tab)));
+  els.authForm.addEventListener("submit", handleAuthSubmit);
+  els.logoutBtn.addEventListener("click", handleLogout);
+  els.rideForm.addEventListener("submit", handleBookRide);
+  els.chips.forEach((chip) =>
+    chip.addEventListener("click", () => {
+      const value = chip.dataset.fill || "";
+      if (!els.pickup.value.trim()) {
+        els.pickup.value = value;
+      } else if (!els.drop.value.trim()) {
+        els.drop.value = value;
+      } else {
+        els.drop.value = value;
+      }
+      debounceEstimate();
+    })
+  );
+  [els.pickup, els.drop].forEach((input) => input.addEventListener("input", debounceEstimate));
+}
+
+async function init() {
+  attachEvents();
+  setAuthMode("login");
+  const ok = await loadCurrentUser();
+  if (ok) {
+    await afterLogin();
+  } else {
+    showLoggedOutUi();
+  }
+}
+
+init();

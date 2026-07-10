@@ -9,6 +9,7 @@
   --accent-2: #64dfdf;
   --success: #2ecc71;
   --warning: #ff914d;
+  --danger: #ff5c7a;
 }
 
 * {
@@ -23,8 +24,12 @@ body {
   color: var(--text);
 }
 
+.hidden {
+  display: none !important;
+}
+
 .app-shell {
-  width: min(920px, 100%);
+  width: min(1080px, 100%);
   margin: 0 auto;
   padding: 1.25rem;
   display: grid;
@@ -36,6 +41,14 @@ body {
   border: 1px solid #2a3760;
   border-radius: 16px;
   padding: 1.25rem;
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .hero h1 {
@@ -55,6 +68,13 @@ body {
 
 .subtitle {
   margin: 0;
+  color: var(--muted);
+}
+
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   color: var(--muted);
 }
 
@@ -95,6 +115,28 @@ input:focus,
 select:focus {
   outline: 2px solid #3a7bd5;
   outline-offset: 1px;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.tab {
+  flex: 1;
+  border: 1px solid #3a4567;
+  background: #0e1323;
+  color: var(--muted);
+  padding: 0.55rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tab.active {
+  border-color: var(--accent-2);
+  color: var(--text);
+  background: #17203b;
 }
 
 .location-chips {
@@ -181,6 +223,24 @@ select:focus {
   filter: brightness(1.03);
 }
 
+.primary:disabled {
+  filter: grayscale(0.4);
+  cursor: not-allowed;
+}
+
+.ghost {
+  border: 1px solid #3a4567;
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
+
+.ghost:hover {
+  border-color: var(--accent-2);
+}
+
 .form-message {
   margin: 0.2rem 0 0;
   min-height: 1.1rem;
@@ -209,6 +269,29 @@ select:focus {
 .status-text {
   margin: 0.75rem 0 0;
   color: var(--accent-2);
+}
+
+.driver-box {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #2b3a63;
+  border-radius: 10px;
+  background: #0d1429;
+}
+
+.driver-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #ff7f50);
+  color: #1c1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
 }
 
 .progress {
@@ -253,14 +336,30 @@ select:focus {
   font-size: 0.86rem;
 }
 
-@media (min-width: 860px) {
+.map {
+  height: 340px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #2b3a63;
+  background: #0d1429;
+}
+
+.leaflet-container {
+  background: #0f162b;
+}
+
+@media (min-width: 900px) {
   .app-shell {
     grid-template-columns: repeat(2, 1fr);
     align-items: start;
   }
 
   .hero,
-  .card:first-of-type {
+  #auth-card {
+    grid-column: 1 / -1;
+  }
+
+  #map-card {
     grid-column: 1 / -1;
   }
 }
