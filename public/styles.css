@@ -378,6 +378,66 @@ select:focus {
   margin-top: 0.75rem;
 }
 
+.promo-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.promo-row input {
+  flex: 1;
+}
+
+.status-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.danger {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+}
+
+.danger:hover {
+  background: rgba(255, 92, 122, 0.1);
+}
+
+.rating-panel {
+  margin-top: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid #2b3a63;
+  border-radius: 10px;
+  background: #0d1429;
+}
+
+.stars {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0.4rem 0;
+}
+
+.star {
+  background: transparent;
+  border: 0;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #4d5a83;
+  padding: 0;
+}
+
+.star.active {
+  color: var(--accent);
+}
+
+.rating-panel input {
+  margin-top: 0.4rem;
+}
+
 .leaflet-container {
   background: #0f162b;
 }

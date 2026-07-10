@@ -20,6 +20,12 @@ RideNow is a mobile-first ride-booking web app inspired by Uber and Rapido. It s
 - **UPI QR payments**:
   - Save your UPI ID and generate a scannable QR for anyone to pay you
   - Each ride shows a **Scan-to-Pay QR** with the driver's UPI + fare pre-filled
+- **Promo codes**: `WELCOME10`, `RIDE50`, `BIKE20` (server-validated, applied to fare)
+- **Ride cancellation** while status is `searching`/`assigned`/`arriving`/`arrived`
+- **5-star ride rating** (with optional comment) after completion
+- **API docs**: JSON index at `/api`, OpenAPI JSON at `/api/openapi.json`, HTML page at `/api/docs`
+- **Nearby drivers mock**: `/api/drivers/nearby?lat=&lng=`
+- **Health**: `/api/health` with uptime and counters
 
 ## Tech Stack
 
@@ -44,18 +50,27 @@ Change the port with `PORT=4000 npm start`.
 
 | Method | Endpoint             | Description                         |
 |-------:|----------------------|-------------------------------------|
-| POST   | `/api/auth/signup`     | Create an account, returns token          |
-| POST   | `/api/auth/login`      | Login, returns token                      |
-| GET    | `/api/me`              | Current user (Bearer token)               |
-| PUT    | `/api/me/upi`          | Save/clear your UPI ID (Bearer token)     |
-| GET    | `/api/me/qr`           | PNG data URL of your UPI QR (Bearer)      |
-| GET    | `/api/vehicles`        | List of ride categories                   |
-| POST   | `/api/estimate`        | Fare + ETA for all vehicles               |
-| POST   | `/api/rides`           | Book a ride (Bearer token)                |
-| GET    | `/api/rides`           | Ride history (Bearer token)               |
-| GET    | `/api/rides/:id`       | Ride detail (Bearer token)                |
-| GET    | `/api/rides/:id/qr`    | Scan-to-pay QR for the driver (Bearer)    |
-| WS     | `/ws?token=...`        | Real-time ride status updates             |
+| GET    | `/api/health`               | Server status + counters                       |
+| GET    | `/api`                      | JSON list of all routes                        |
+| GET    | `/api/openapi.json`         | Minimal OpenAPI spec                           |
+| GET    | `/api/docs`                 | HTML API docs                                  |
+| POST   | `/api/auth/signup`          | Create an account, returns token               |
+| POST   | `/api/auth/login`           | Login, returns token                           |
+| GET    | `/api/me`                   | Current user (Bearer)                          |
+| PUT    | `/api/me/upi`               | Save/clear your UPI ID (Bearer)                |
+| GET    | `/api/me/qr`                | PNG data URL of your UPI QR (Bearer)           |
+| GET    | `/api/vehicles`             | List of ride categories                        |
+| POST   | `/api/estimate`             | Fare + ETA for all vehicles (optional promo)   |
+| POST   | `/api/rides`                | Book a ride (Bearer)                           |
+| GET    | `/api/rides`                | Ride history (Bearer)                          |
+| GET    | `/api/rides/:id`            | Ride detail (Bearer)                           |
+| POST   | `/api/rides/:id/cancel`     | Cancel a ride (Bearer)                         |
+| POST   | `/api/rides/:id/rate`       | Rate a completed ride 1–5 (Bearer)             |
+| GET    | `/api/rides/:id/qr`         | Scan-to-pay QR for the driver (Bearer)         |
+| GET    | `/api/promos`               | List active promo codes                        |
+| POST   | `/api/promos/validate`      | Validate a promo against a fare                |
+| GET    | `/api/drivers/nearby`       | Mock nearby drivers around lat/lng             |
+| WS     | `/ws?token=...`             | Real-time ride status updates                  |
 
 ## Notes
 

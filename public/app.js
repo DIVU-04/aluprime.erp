@@ -4,6 +4,7 @@ const state = {
   vehicles: [],
   selectedVehicleId: "bike",
   estimate: null,
+  promoCode: null,
   activeRide: null,
   socket: null,
   map: null,
@@ -49,6 +50,14 @@ const els = {
   distanceOutput: $("#distance-output"),
   etaOutput: $("#eta-output"),
   fareOutput: $("#fare-output"),
+  fareLine: $("#fare-line"),
+  discountLine: $("#discount-line"),
+  discountOutput: $("#discount-output"),
+  totalLine: $("#total-line"),
+  totalOutput: $("#total-output"),
+  promoCode: $("#promo-code"),
+  promoApply: $("#promo-apply"),
+  promoStatus: $("#promo-status"),
   bookBtn: $("#book-btn"),
   formMessage: $("#form-message"),
   statusPanel: $("#status-panel"),
@@ -263,6 +272,8 @@ function renderVehicles() {
 function renderFareSummary() {
   const options = state.estimate?.options || [];
   const chosen = options.find((o) => o.id === state.selectedVehicleId);
+  els.discountLine.classList.add("hidden");
+  els.totalLine.classList.add("hidden");
   if (!state.estimate || !chosen) {
     els.distanceOutput.textContent = "0 km";
     els.etaOutput.textContent = "0 min";
@@ -272,6 +283,21 @@ function renderFareSummary() {
   els.distanceOutput.textContent = `${state.estimate.distanceKm} km`;
   els.etaOutput.textContent = `${chosen.eta} min`;
   els.fareOutput.textContent = `₹${chosen.fare}`;
+
+  const promo = state.estimate.promo;
+  if (promo && !promo.error && promo.discount) {
+    els.discountLine.classList.remove("hidden");
+    els.totalLine.classList.remove("hidden");
+    els.discountOutput.textContent = `- ₹${promo.discount} (${promo.code})`;
+    els.totalOutput.textContent = `₹${promo.discountedFare}`;
+    els.promoStatus.style.color = "var(--success)";
+    els.promoStatus.textContent = `${promo.code} applied — ${promo.description}`;
+  } else if (promo && promo.error) {
+    els.promoStatus.style.color = "var(--warning)";
+    els.promoStatus.textContent = `${promo.code}: ${promo.error}`;
+  } else if (!state.promoCode) {
+    els.promoStatus.textContent = "";
+  }
 }
 
 async function refreshEstimate() {
@@ -286,12 +312,29 @@ async function refreshEstimate() {
   try {
     state.estimate = await api("/api/estimate", {
       method: "POST",
-      body: { pickup, drop, vehicleId: state.selectedVehicleId },
+      body: {
+        pickup,
+        drop,
+        vehicleId: state.selectedVehicleId,
+        promoCode: state.promoCode || undefined,
+      },
     });
     renderVehicles();
     renderFareSummary();
     updateMapForEstimate();
   } catch {}
+}
+
+function handlePromoApply() {
+  const code = els.promoCode.value.trim().toUpperCase();
+  state.promoCode = code || null;
+  if (code) {
+    els.promoStatus.style.color = "var(--muted)";
+    els.promoStatus.textContent = `Checking ${code}...`;
+  } else {
+    els.promoStatus.textContent = "";
+  }
+  refreshEstimate();
 }
 
 function debounceEstimate() {
@@ -322,6 +365,7 @@ async function handleBookRide(event) {
         drop,
         vehicleId: state.selectedVehicleId,
         payment: els.payment.value,
+        promoCode: state.promoCode || undefined,
       },
     });
     state.activeRide = ride;
@@ -344,8 +388,10 @@ const STATUS_LABEL = {
   arrived: "Driver has reached your pickup",
   in_progress: "Trip in progress",
   completed: "Trip completed",
-  cancelled: "Trip cancelled",
+  cancelled: "Ride cancelled",
 };
+
+const CANCELLABLE = new Set(["searching", "assigned", "arriving", "arrived"]);
 
 const STATUS_PROGRESS = {
   searching: 15,
@@ -360,13 +406,16 @@ const STATUS_PROGRESS = {
 function renderActiveRide(ride) {
   els.statusPanel.classList.remove("empty");
   const initial = ride.driver ? ride.driver.name.charAt(0) : "?";
+  const fareLine = ride.discount
+    ? `Fare ₹${ride.fare} (₹${ride.baseFare} - ₹${ride.discount} ${ride.promoCode || ""}) • ${ride.distanceKm} km`
+    : `Fare ₹${ride.fare} • ${ride.distanceKm} km`;
   els.statusPanel.innerHTML = `
     <div class="status-top">
       <div>
         <strong>${ride.vehicleName}</strong>
         <div class="meta">${ride.pickup.label} → ${ride.drop.label}</div>
       </div>
-      <div class="meta">Fare ₹${ride.fare} • ${ride.distanceKm} km</div>
+      <div class="meta">${fareLine}</div>
     </div>
     <p id="status-text" class="status-text">${STATUS_LABEL[ride.status] || ride.status}</p>
     <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
@@ -379,14 +428,94 @@ function renderActiveRide(ride) {
         </div>
       </div>
     </div>
+    <div class="status-actions ${CANCELLABLE.has(ride.status) ? "" : "hidden"}">
+      <button class="danger" type="button" id="cancel-ride-btn">Cancel ride</button>
+    </div>
     <div id="pay-qr" class="qr-panel pay-qr hidden"></div>
+    <div id="rating-panel" class="rating-panel hidden"></div>
   `;
   const bar = document.getElementById("progress-bar");
   if (bar) bar.style.width = `${STATUS_PROGRESS[ride.status] || 0}%`;
 
-  if (ride.driver) {
+  const cancelBtn = document.getElementById("cancel-ride-btn");
+  if (cancelBtn) cancelBtn.addEventListener("click", () => handleCancelRide(ride.id));
+
+  if (ride.driver && ride.status !== "cancelled") {
     loadRidePaymentQr(ride);
   }
+
+  if (ride.status === "completed") {
+    renderRatingPanel(ride);
+  }
+}
+
+async function handleCancelRide(rideId) {
+  if (!confirm("Cancel this ride?")) return;
+  try {
+    const { ride } = await api(`/api/rides/${rideId}/cancel`, { method: "POST", auth: true, body: {} });
+    state.activeRide = ride;
+    renderActiveRide(ride);
+    loadHistory();
+  } catch (err) {
+    els.formMessage.style.color = "var(--warning)";
+    els.formMessage.textContent = err.message;
+  }
+}
+
+function renderRatingPanel(ride) {
+  const panel = document.getElementById("rating-panel");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  if (ride.rating) {
+    panel.innerHTML = `
+      <strong>You rated this ride</strong>
+      <div class="stars">${[1, 2, 3, 4, 5].map((n) => `<span class="star ${n <= ride.rating ? "active" : ""}">★</span>`).join("")}</div>
+      ${ride.ratingComment ? `<div class="meta">"${ride.ratingComment}"</div>` : ""}
+    `;
+    return;
+  }
+  panel.innerHTML = `
+    <strong>Rate your ride</strong>
+    <div class="stars" id="rating-stars">
+      ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star" data-stars="${n}">★</button>`).join("")}
+    </div>
+    <input type="text" id="rating-comment" placeholder="Optional feedback" maxlength="500" />
+    <button class="primary" type="button" id="rating-submit" disabled>Submit rating</button>
+    <p id="rating-message" class="form-message" role="status"></p>
+  `;
+
+  let selectedStars = 0;
+  const starButtons = panel.querySelectorAll(".star");
+  starButtons.forEach((btn) =>
+    btn.addEventListener("click", () => {
+      selectedStars = Number(btn.dataset.stars);
+      starButtons.forEach((b) =>
+        b.classList.toggle("active", Number(b.dataset.stars) <= selectedStars)
+      );
+      panel.querySelector("#rating-submit").disabled = false;
+    })
+  );
+
+  panel.querySelector("#rating-submit").addEventListener("click", async () => {
+    if (!selectedStars) return;
+    const msg = panel.querySelector("#rating-message");
+    try {
+      const { ride: updated } = await api(`/api/rides/${ride.id}/rate`, {
+        method: "POST",
+        auth: true,
+        body: {
+          stars: selectedStars,
+          comment: panel.querySelector("#rating-comment").value.trim() || undefined,
+        },
+      });
+      state.activeRide = updated;
+      renderRatingPanel(updated);
+      loadHistory();
+    } catch (err) {
+      msg.style.color = "var(--warning)";
+      msg.textContent = err.message;
+    }
+  });
 }
 
 async function loadRidePaymentQr(ride) {
@@ -556,6 +685,13 @@ function attachEvents() {
   els.logoutBtn.addEventListener("click", handleLogout);
   els.upiForm.addEventListener("submit", handleUpiSave);
   els.upiClearBtn.addEventListener("click", handleUpiClear);
+  els.promoApply.addEventListener("click", handlePromoApply);
+  els.promoCode.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handlePromoApply();
+    }
+  });
   els.rideForm.addEventListener("submit", handleBookRide);
   els.chips.forEach((chip) =>
     chip.addEventListener("click", () => {

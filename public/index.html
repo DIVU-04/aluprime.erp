@@ -105,10 +105,25 @@
             <option value="Wallet">Wallet</option>
           </select>
 
+          <label for="promo-code">Promo code (optional)</label>
+          <div class="promo-row">
+            <input
+              id="promo-code"
+              name="promoCode"
+              type="text"
+              placeholder="WELCOME10 / RIDE50 / BIKE20"
+              autocomplete="off"
+            />
+            <button type="button" class="ghost" id="promo-apply">Apply</button>
+          </div>
+          <p id="promo-status" class="form-message" role="status"></p>
+
           <div id="fare-summary" class="fare-summary" aria-live="polite">
             <p><span>Distance</span> <strong id="distance-output">0 km</strong></p>
             <p><span>ETA</span> <strong id="eta-output">0 min</strong></p>
-            <p><span>Estimated Fare</span> <strong id="fare-output">₹0</strong></p>
+            <p id="fare-line"><span>Estimated Fare</span> <strong id="fare-output">₹0</strong></p>
+            <p id="discount-line" class="hidden"><span>Discount</span> <strong id="discount-output">-₹0</strong></p>
+            <p id="total-line" class="hidden"><span>You pay</span> <strong id="total-output">₹0</strong></p>
           </div>
 
           <button class="primary" type="submit" id="book-btn">Book Ride</button>
