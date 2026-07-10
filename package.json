@@ -1,0 +1,15 @@
+{
+  "name": "ridenow",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Uber/Rapido-style ride booking app (MVP)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}
