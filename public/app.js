@@ -29,6 +29,15 @@ const els = {
   usernameLabel: $("#username-label"),
   logoutBtn: $("#logout-btn"),
   bookingCard: $("#booking-card"),
+  upiCard: $("#upi-card"),
+  upiForm: $("#upi-form"),
+  upiInput: $("#upi-input"),
+  upiSaveBtn: $("#upi-save"),
+  upiClearBtn: $("#upi-clear"),
+  upiMessage: $("#upi-message"),
+  myQrPanel: $("#my-qr-panel"),
+  myQrImg: $("#my-qr-img"),
+  myQrUpi: $("#my-qr-upi"),
   mapCard: $("#map-card"),
   trackerCard: $("#tracker-card"),
   historyCard: $("#history-card"),
@@ -75,17 +84,20 @@ function showAuthedUi() {
   els.authCard.classList.add("hidden");
   els.userBox.classList.remove("hidden");
   els.bookingCard.classList.remove("hidden");
+  els.upiCard.classList.remove("hidden");
   els.mapCard.classList.remove("hidden");
   els.trackerCard.classList.remove("hidden");
   els.historyCard.classList.remove("hidden");
   els.usernameLabel.textContent = state.user ? `@${state.user.username}` : "";
   ensureMap();
+  renderUpiUi();
 }
 
 function showLoggedOutUi() {
   els.authCard.classList.remove("hidden");
   els.userBox.classList.add("hidden");
   els.bookingCard.classList.add("hidden");
+  els.upiCard.classList.add("hidden");
   els.mapCard.classList.add("hidden");
   els.trackerCard.classList.add("hidden");
   els.historyCard.classList.add("hidden");
@@ -128,6 +140,75 @@ async function handleAuthSubmit(event) {
     els.authMessage.textContent = err.message;
   } finally {
     els.authSubmit.disabled = false;
+  }
+}
+
+async function renderUpiUi() {
+  const upi = state.user?.upiId || "";
+  els.upiInput.value = upi;
+  els.upiClearBtn.disabled = !upi;
+  if (upi) {
+    try {
+      const data = await api("/api/me/qr", { auth: true });
+      els.myQrImg.src = data.dataUrl;
+      els.myQrUpi.textContent = data.upiId;
+      els.myQrPanel.classList.remove("hidden");
+    } catch {
+      els.myQrPanel.classList.add("hidden");
+    }
+  } else {
+    els.myQrPanel.classList.add("hidden");
+    els.myQrImg.removeAttribute("src");
+  }
+}
+
+async function handleUpiSave(event) {
+  event.preventDefault();
+  const value = els.upiInput.value.trim();
+  if (!value) {
+    els.upiMessage.style.color = "var(--warning)";
+    els.upiMessage.textContent = "Enter a UPI ID like name@bank.";
+    return;
+  }
+  els.upiSaveBtn.disabled = true;
+  els.upiMessage.style.color = "var(--accent-2)";
+  els.upiMessage.textContent = "Saving...";
+  try {
+    const { user } = await api("/api/me/upi", {
+      method: "PUT",
+      auth: true,
+      body: { upiId: value },
+    });
+    state.user = user;
+    els.upiMessage.style.color = "var(--success)";
+    els.upiMessage.textContent = "UPI saved. QR ready to scan.";
+    await renderUpiUi();
+  } catch (err) {
+    els.upiMessage.style.color = "var(--warning)";
+    els.upiMessage.textContent = err.message;
+  } finally {
+    els.upiSaveBtn.disabled = false;
+  }
+}
+
+async function handleUpiClear() {
+  els.upiSaveBtn.disabled = true;
+  try {
+    const { user } = await api("/api/me/upi", {
+      method: "PUT",
+      auth: true,
+      body: { upiId: null },
+    });
+    state.user = user;
+    els.upiInput.value = "";
+    els.upiMessage.style.color = "var(--muted)";
+    els.upiMessage.textContent = "UPI ID removed.";
+    await renderUpiUi();
+  } catch (err) {
+    els.upiMessage.style.color = "var(--warning)";
+    els.upiMessage.textContent = err.message;
+  } finally {
+    els.upiSaveBtn.disabled = false;
   }
 }
 
@@ -298,9 +379,31 @@ function renderActiveRide(ride) {
         </div>
       </div>
     </div>
+    <div id="pay-qr" class="qr-panel pay-qr hidden"></div>
   `;
   const bar = document.getElementById("progress-bar");
   if (bar) bar.style.width = `${STATUS_PROGRESS[ride.status] || 0}%`;
+
+  if (ride.driver) {
+    loadRidePaymentQr(ride);
+  }
+}
+
+async function loadRidePaymentQr(ride) {
+  try {
+    const data = await api(`/api/rides/${ride.id}/qr`, { auth: true });
+    const panel = document.getElementById("pay-qr");
+    if (!panel) return;
+    panel.innerHTML = `
+      <img alt="Pay driver QR" src="${data.dataUrl}" />
+      <div>
+        <strong>Scan to pay ₹${data.amount}</strong>
+        <div class="meta">${data.payee.name} • ${data.payee.upiId}</div>
+        <div class="meta">Open any UPI app and scan.</div>
+      </div>
+    `;
+    panel.classList.remove("hidden");
+  } catch {}
 }
 
 async function loadHistory() {
@@ -451,6 +554,8 @@ function attachEvents() {
   els.tabs.forEach((tab) => tab.addEventListener("click", () => setAuthMode(tab.dataset.tab)));
   els.authForm.addEventListener("submit", handleAuthSubmit);
   els.logoutBtn.addEventListener("click", handleLogout);
+  els.upiForm.addEventListener("submit", handleUpiSave);
+  els.upiClearBtn.addEventListener("click", handleUpiClear);
   els.rideForm.addEventListener("submit", handleBookRide);
   els.chips.forEach((chip) =>
     chip.addEventListener("click", () => {

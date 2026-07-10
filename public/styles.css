@@ -344,6 +344,40 @@ select:focus {
   background: #0d1429;
 }
 
+.upi-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.qr-panel {
+  margin-top: 0.9rem;
+  padding: 0.8rem;
+  border: 1px solid #2b3a63;
+  border-radius: 12px;
+  background: #0d1429;
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.qr-panel img {
+  width: 132px;
+  height: 132px;
+  border-radius: 10px;
+  background: #fff;
+  padding: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.qr-panel strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.pay-qr {
+  margin-top: 0.75rem;
+}
+
 .leaflet-container {
   background: #0f162b;
 }
@@ -360,6 +394,10 @@ select:focus {
   }
 
   #map-card {
+    grid-column: 1 / -1;
+  }
+
+  #upi-card {
     grid-column: 1 / -1;
   }
 }

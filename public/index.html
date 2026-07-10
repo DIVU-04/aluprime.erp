@@ -116,6 +116,37 @@
         </form>
       </section>
 
+      <section id="upi-card" class="card hidden">
+        <h2>Payment (UPI)</h2>
+        <p class="meta">
+          Save your UPI ID once — we'll generate a scannable QR so anyone can pay you.
+        </p>
+        <form id="upi-form">
+          <label for="upi-input">Your UPI ID</label>
+          <input
+            id="upi-input"
+            name="upiId"
+            type="text"
+            placeholder="yourname@bank"
+            autocomplete="off"
+          />
+          <div class="upi-actions">
+            <button class="primary" type="submit" id="upi-save">Save & Generate QR</button>
+            <button class="ghost" type="button" id="upi-clear">Remove</button>
+          </div>
+          <p id="upi-message" class="form-message" role="status"></p>
+        </form>
+
+        <div id="my-qr-panel" class="qr-panel hidden">
+          <img id="my-qr-img" alt="Your UPI QR" />
+          <div>
+            <strong>Your QR</strong>
+            <div class="meta" id="my-qr-upi"></div>
+            <div class="meta">Scan with any UPI app to pay you.</div>
+          </div>
+        </div>
+      </section>
+
       <section id="map-card" class="card hidden">
         <h2>Live map</h2>
         <div id="map" class="map"></div>

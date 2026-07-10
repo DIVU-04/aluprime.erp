@@ -3,6 +3,15 @@ const crypto = require("crypto");
 const http = require("http");
 const express = require("express");
 const { WebSocketServer } = require("ws");
+const QRCode = require("qrcode");
+
+const DRIVER_UPI_POOL = [
+  "ravi.driver@upi",
+  "priya.captain@ok",
+  "arjun.rider@ybl",
+  "neha.pay@paytm",
+  "karan.upi@axl",
+];
 
 const app = express();
 app.use(express.json());
@@ -146,12 +155,14 @@ function scheduleRideLifecycle(ride) {
   ride.driverLocation = driverStart;
 
   setTimeout(() => {
+    const name = DRIVER_NAMES[Math.floor(Math.random() * DRIVER_NAMES.length)];
     ride.driver = {
-      name: DRIVER_NAMES[Math.floor(Math.random() * DRIVER_NAMES.length)],
+      name,
       rating: Number((4.4 + Math.random() * 0.5).toFixed(2)),
       vehicleNumber: `KA-${String(Math.floor(10 + Math.random() * 89))}-${String(
         Math.floor(1000 + Math.random() * 8999)
       )}`,
+      upiId: DRIVER_UPI_POOL[Math.floor(Math.random() * DRIVER_UPI_POOL.length)],
     };
     setStatus("assigned");
   }, 1500);
@@ -196,6 +207,7 @@ app.post("/api/auth/signup", (req, res) => {
     id: newId("usr"),
     username: normalized,
     passwordHash: sha256(password),
+    upiId: null,
     createdAt: new Date().toISOString(),
   };
   users.set(user.id, user);
@@ -221,8 +233,78 @@ app.post("/api/auth/login", (req, res) => {
   res.json({ token, user: { id: user.id, username: user.username } });
 });
 
+function publicUser(user) {
+  return { id: user.id, username: user.username, upiId: user.upiId || null };
+}
+
 app.get("/api/me", authMiddleware, (req, res) => {
-  res.json({ user: { id: req.user.id, username: req.user.username } });
+  res.json({ user: publicUser(req.user) });
+});
+
+const UPI_REGEX = /^[a-z0-9._-]{2,}@[a-z0-9.-]{2,}$/i;
+
+app.put("/api/me/upi", authMiddleware, (req, res) => {
+  const raw = req.body && req.body.upiId;
+  if (raw === "" || raw === null) {
+    req.user.upiId = null;
+    return res.json({ user: publicUser(req.user) });
+  }
+  const value = String(raw || "").trim();
+  if (!UPI_REGEX.test(value)) {
+    return res.status(400).json({ error: "invalid upi id (expected format: name@handle)" });
+  }
+  req.user.upiId = value;
+  res.json({ user: publicUser(req.user) });
+});
+
+function buildUpiUri({ upi, name, amount, note }) {
+  const params = new URLSearchParams();
+  params.set("pa", upi);
+  if (name) params.set("pn", name);
+  if (amount != null) params.set("am", String(amount));
+  params.set("cu", "INR");
+  if (note) params.set("tn", note);
+  return `upi://pay?${params.toString()}`;
+}
+
+async function generateQrDataUrl(payload) {
+  return QRCode.toDataURL(payload, {
+    errorCorrectionLevel: "M",
+    margin: 1,
+    scale: 6,
+    color: { dark: "#0b1024", light: "#ffffff" },
+  });
+}
+
+app.get("/api/me/qr", authMiddleware, async (req, res) => {
+  if (!req.user.upiId) return res.status(400).json({ error: "no upi id saved" });
+  const uri = buildUpiUri({
+    upi: req.user.upiId,
+    name: req.user.username,
+    note: `Pay @${req.user.username}`,
+  });
+  const dataUrl = await generateQrDataUrl(uri);
+  res.json({ upiId: req.user.upiId, upiUri: uri, dataUrl });
+});
+
+app.get("/api/rides/:id/qr", authMiddleware, async (req, res) => {
+  const ride = rides.get(req.params.id);
+  if (!ride || ride.userId !== req.userId) return res.status(404).json({ error: "not found" });
+  if (!ride.driver) return res.status(400).json({ error: "driver not assigned yet" });
+  const uri = buildUpiUri({
+    upi: ride.driver.upiId,
+    name: ride.driver.name,
+    amount: ride.fare,
+    note: `RideNow ${ride.id}`,
+  });
+  const dataUrl = await generateQrDataUrl(uri);
+  res.json({
+    rideId: ride.id,
+    payee: { name: ride.driver.name, upiId: ride.driver.upiId },
+    amount: ride.fare,
+    upiUri: uri,
+    dataUrl,
+  });
 });
 
 app.get("/api/vehicles", (_req, res) => {

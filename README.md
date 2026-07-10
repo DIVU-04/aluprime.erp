@@ -17,6 +17,9 @@ RideNow is a mobile-first ride-booking web app inspired by Uber and Rapido. It s
 - **Ride lifecycle** with real-time status pushes over WebSocket:
   - searching → assigned → arriving → arrived → in_progress → completed
 - **Recent rides history** loaded from the backend
+- **UPI QR payments**:
+  - Save your UPI ID and generate a scannable QR for anyone to pay you
+  - Each ride shows a **Scan-to-Pay QR** with the driver's UPI + fare pre-filled
 
 ## Tech Stack
 
@@ -41,15 +44,18 @@ Change the port with `PORT=4000 npm start`.
 
 | Method | Endpoint             | Description                         |
 |-------:|----------------------|-------------------------------------|
-| POST   | `/api/auth/signup`   | Create an account, returns token    |
-| POST   | `/api/auth/login`    | Login, returns token                |
-| GET    | `/api/me`            | Current user (Bearer token)         |
-| GET    | `/api/vehicles`      | List of ride categories             |
-| POST   | `/api/estimate`      | Fare + ETA for all vehicles         |
-| POST   | `/api/rides`         | Book a ride (Bearer token)          |
-| GET    | `/api/rides`         | Ride history (Bearer token)         |
-| GET    | `/api/rides/:id`     | Ride detail (Bearer token)          |
-| WS     | `/ws?token=...`      | Real-time ride status updates       |
+| POST   | `/api/auth/signup`     | Create an account, returns token          |
+| POST   | `/api/auth/login`      | Login, returns token                      |
+| GET    | `/api/me`              | Current user (Bearer token)               |
+| PUT    | `/api/me/upi`          | Save/clear your UPI ID (Bearer token)     |
+| GET    | `/api/me/qr`           | PNG data URL of your UPI QR (Bearer)      |
+| GET    | `/api/vehicles`        | List of ride categories                   |
+| POST   | `/api/estimate`        | Fare + ETA for all vehicles               |
+| POST   | `/api/rides`           | Book a ride (Bearer token)                |
+| GET    | `/api/rides`           | Ride history (Bearer token)               |
+| GET    | `/api/rides/:id`       | Ride detail (Bearer token)                |
+| GET    | `/api/rides/:id/qr`    | Scan-to-pay QR for the driver (Bearer)    |
+| WS     | `/ws?token=...`        | Real-time ride status updates             |
 
 ## Notes
 
