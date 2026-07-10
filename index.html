@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RideNow - Uber/Rapido Style App</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <p class="badge">On-demand rides</p>
+        <h1>RideNow</h1>
+        <p class="subtitle">
+          Book bikes, autos, and cabs in seconds with real-time ride updates.
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>Book your ride</h2>
+        <form id="ride-form">
+          <label for="pickup">Pickup</label>
+          <input
+            id="pickup"
+            name="pickup"
+            type="text"
+            placeholder="Enter pickup location"
+            required
+          />
+
+          <label for="drop">Drop</label>
+          <input
+            id="drop"
+            name="drop"
+            type="text"
+            placeholder="Enter destination"
+            required
+          />
+
+          <div class="location-chips">
+            <button type="button" class="chip" data-fill="Airport">
+              Airport
+            </button>
+            <button type="button" class="chip" data-fill="Railway Station">
+              Railway Station
+            </button>
+            <button type="button" class="chip" data-fill="City Mall">
+              City Mall
+            </button>
+            <button type="button" class="chip" data-fill="Tech Park">
+              Tech Park
+            </button>
+          </div>
+
+          <h3>Choose vehicle</h3>
+          <div id="vehicle-options" class="vehicle-grid"></div>
+
+          <label for="payment">Payment method</label>
+          <select id="payment" name="payment">
+            <option value="UPI">UPI</option>
+            <option value="Card">Card</option>
+            <option value="Cash">Cash</option>
+            <option value="Wallet">Wallet</option>
+          </select>
+
+          <div id="fare-summary" class="fare-summary" aria-live="polite">
+            <p><span>Distance</span> <strong id="distance-output">0 km</strong></p>
+            <p><span>ETA</span> <strong id="eta-output">0 min</strong></p>
+            <p><span>Estimated Fare</span> <strong id="fare-output">₹0</strong></p>
+          </div>
+
+          <button class="primary" type="submit">Book Ride</button>
+          <p id="form-message" class="form-message" role="status"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Ride tracker</h2>
+        <div id="status-panel" class="status-panel empty">
+          <p>Your active ride details will appear here after booking.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Recent rides</h2>
+        <ul id="history-list" class="history-list">
+          <li class="empty">No rides yet. Book your first trip.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
