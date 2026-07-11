@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nira-agent"
+version = "0.1.0"
+description = "Nira — your personal AI assistant like Jarvis"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.30.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "rich>=13.7.0",
+    "httpx>=0.27.0",
+]
+
+[project.scripts]
+nira = "nira.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nira*"]
