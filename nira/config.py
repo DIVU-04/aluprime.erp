@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     phrase_time_limit: int = 20
     tts_rate: int = 175
     tts_voice: str = ""
+    default_city: str = "London"
+    api_host: str = "0.0.0.0"
+    api_port: int = 8080
 
     @property
     def memory_dir(self) -> Path:

@@ -10,7 +10,18 @@ from nira.agent.orchestrator import NiraAgent
 from nira.config import get_settings
 from nira.output.response import OutputMode
 from nira.perception.voice import VoiceEngine, VoiceError
+from nira.services.briefing import BriefingService
 from nira.ui.hud import FutureStickHUD
+
+HELP_TEXT = """
+Commands:
+  /help      Show this help
+  /status    System status dashboard
+  /briefing  Daily morning briefing
+  /clear     Reset conversation memory
+  /voice     Toggle voice mode
+  quit       Exit Nira
+"""
 
 
 def run_interactive(agent: NiraAgent, wake_mode: bool = False) -> None:
@@ -31,7 +42,7 @@ def run_interactive(agent: NiraAgent, wake_mode: bool = False) -> None:
         intro = (
             f"[bold]Hey! I'm {name}[/bold], your personal AI assistant.\n"
             "Type your message, or 'quit' to exit.\n"
-            "Commands: /clear · /status · /voice"
+            "Commands: /help · /status · /briefing · /clear · /voice"
         )
         if voice_mode:
             intro += f"\nVoice active — say \"Hey {settings.wake_word.title()}\""
@@ -69,6 +80,15 @@ def run_interactive(agent: NiraAgent, wake_mode: bool = False) -> None:
                 hud.status_hud(agent)
             else:
                 _print_status(agent, console)
+            continue
+        if user_input == "/help":
+            if hud:
+                hud.notify(HELP_TEXT.strip(), "info")
+            else:
+                console.print(Panel(HELP_TEXT.strip(), title="Help", border_style="cyan"))
+            continue
+        if user_input == "/briefing":
+            _run_briefing(agent, hud, console)
             continue
         if user_input == "/voice":
             voice_mode, settings.voice_enabled = _toggle_voice(agent, voice_mode, hud, console)
@@ -139,6 +159,18 @@ def _toggle_voice(
     return voice_mode, voice_mode
 
 
+def _run_briefing(
+    agent: NiraAgent,
+    hud: FutureStickHUD | None,
+    console: Console,
+) -> None:
+    briefing = BriefingService(agent).generate()
+    if hud:
+        hud.deliver_response(briefing)
+    else:
+        console.print(Panel(briefing, title="Daily Briefing", border_style="green"))
+
+
 def _print_status(agent: NiraAgent, console: Console) -> None:
     tools = ", ".join(t.name for t in agent.tools.list_tools())
     has_key = "yes" if agent.settings.llm_api_key else "no (demo mode)"
@@ -172,6 +204,8 @@ def main() -> None:
     parser.add_argument("--voice", action="store_true", help="Enable voice input and spoken responses")
     parser.add_argument("--wake", action="store_true", help="Continuous wake-word listening (requires --voice)")
     parser.add_argument("--speak", action="store_true", help="Speak the response (single-message mode)")
+    parser.add_argument("--server", action="store_true", help="Start web API server with chat UI")
+    parser.add_argument("--briefing", action="store_true", help="Run daily briefing and exit")
     args = parser.parse_args()
 
     settings = get_settings()
@@ -181,9 +215,17 @@ def main() -> None:
         settings.voice_enabled = True
         settings.voice_output = True
 
+    if args.server:
+        from nira.server import run_server
+        run_server()
+        return
+
     agent = NiraAgent(settings)
 
-    if args.trigger:
+    if args.briefing:
+        console = Console()
+        _run_briefing(agent, FutureStickHUD(settings.agent_name) if settings.futuristic_ui else None, console)
+    elif args.trigger:
         agent.process_trigger(args.trigger, {"message": args.trigger})
     elif args.schedule:
         agent.process_scheduled(args.schedule)

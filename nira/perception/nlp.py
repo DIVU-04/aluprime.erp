@@ -12,6 +12,9 @@ class IntentType(str, Enum):
     FILE_OPERATION = "file_operation"
     CODE = "code"
     MEMORY = "memory"
+    WEATHER = "weather"
+    NOTES = "notes"
+    BRIEFING = "briefing"
     UNKNOWN = "unknown"
 
 
@@ -31,6 +34,9 @@ DEVICE_PATTERNS = re.compile(r"\b(light|lights|thermostat|turn on|turn off|smart
 FILE_PATTERNS = re.compile(r"\b(file|read|write|open|save|document)\b", re.I)
 CODE_PATTERNS = re.compile(r"\b(run|execute|script|code|python)\b", re.I)
 MEMORY_PATTERNS = re.compile(r"\b(remember|recall|what do you know|forget)\b", re.I)
+WEATHER_PATTERNS = re.compile(r"\b(weather|temperature|forecast|rain|sunny|cold|hot)\b", re.I)
+NOTES_PATTERNS = re.compile(r"\b(note|notes|jot down|write down)\b", re.I)
+BRIEFING_PATTERNS = re.compile(r"\b(briefing|daily report|morning report|summary)\b", re.I)
 QUESTION_PATTERNS = re.compile(r"\?|^(what|who|when|where|why|how|is|are|can|could)\b", re.I)
 
 
@@ -64,6 +70,12 @@ def parse_intent(text: str) -> ParsedIntent:
         return ParsedIntent(IntentType.CODE, entities, 0.8, text)
     if MEMORY_PATTERNS.search(text):
         return ParsedIntent(IntentType.MEMORY, entities, 0.85, text)
+    if BRIEFING_PATTERNS.search(text):
+        return ParsedIntent(IntentType.BRIEFING, entities, 0.9, text)
+    if WEATHER_PATTERNS.search(text):
+        return ParsedIntent(IntentType.WEATHER, entities, 0.85, text)
+    if NOTES_PATTERNS.search(text):
+        return ParsedIntent(IntentType.NOTES, entities, 0.8, text)
     if QUESTION_PATTERNS.search(text):
         return ParsedIntent(IntentType.QUESTION, entities, 0.75, text)
     if len(text.split()) > 5:

@@ -13,13 +13,16 @@ class IntentRouter:
     }
 
     TOOL_HINTS: dict[IntentType, list[str]] = {
-        IntentType.QUESTION: ["web_search", "memory"],
-        IntentType.TASK: ["web_search", "calendar", "file_operations", "run_code"],
+        IntentType.QUESTION: ["web_search", "memory", "weather", "system_info"],
+        IntentType.TASK: ["web_search", "calendar", "file_operations", "run_code", "notes"],
         IntentType.CODE: ["run_code"],
         IntentType.FILE_OPERATION: ["file_operations"],
         IntentType.DEVICE_CONTROL: ["smart_home"],
-        IntentType.REMINDER: ["calendar", "memory"],
+        IntentType.REMINDER: ["calendar", "memory", "timers"],
         IntentType.MEMORY: ["memory"],
+        IntentType.WEATHER: ["weather"],
+        IntentType.NOTES: ["notes"],
+        IntentType.BRIEFING: ["weather", "calendar", "timers", "memory"],
     }
 
     def route(self, intent: ParsedIntent) -> dict[str, object]:

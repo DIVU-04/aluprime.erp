@@ -17,9 +17,14 @@ from nira.perception.nlp import parse_intent
 from nira.tools.calendar import CalendarTool
 from nira.tools.code_exec import CodeExecTool
 from nira.tools.files import FileTool
+from nira.tools.http_fetch import HttpFetchTool
 from nira.tools.memory_tool import MemoryTool
+from nira.tools.notes import NotesTool
 from nira.tools.registry import ToolRegistry
 from nira.tools.smart_home import SmartHomeTool
+from nira.tools.system_info import SystemTool
+from nira.tools.timers import TimersTool
+from nira.tools.weather import WeatherTool
 from nira.tools.web_search import WebSearchTool
 
 
@@ -63,8 +68,13 @@ class NiraAgent:
         self.tools.register(MemoryTool(self.long_term))
         self.tools.register(FileTool(workspace))
         self.tools.register(CalendarTool(mem / "calendar.json"))
+        self.tools.register(NotesTool(mem / "notes.json"))
+        self.tools.register(TimersTool(mem / "timers.json"))
         self.tools.register(CodeExecTool())
         self.tools.register(SmartHomeTool(mem / "smart_home.json"))
+        self.tools.register(WeatherTool(self.settings.default_city))
+        self.tools.register(SystemTool())
+        self.tools.register(HttpFetchTool())
         if self.settings.web_search_enabled:
             self.tools.register(WebSearchTool())
 
