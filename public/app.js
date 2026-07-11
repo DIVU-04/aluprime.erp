@@ -428,8 +428,9 @@ function renderActiveRide(ride) {
         </div>
       </div>
     </div>
-    <div class="status-actions ${CANCELLABLE.has(ride.status) ? "" : "hidden"}">
-      <button class="danger" type="button" id="cancel-ride-btn">Cancel ride</button>
+    <div class="status-actions">
+      ${CANCELLABLE.has(ride.status) ? '<button class="danger" type="button" id="cancel-ride-btn">Cancel ride</button>' : ""}
+      ${ride.shareToken ? `<button class="ghost" type="button" id="share-btn">Copy share link</button>` : ""}
     </div>
     <div id="pay-qr" class="qr-panel pay-qr hidden"></div>
     <div id="rating-panel" class="rating-panel hidden"></div>
@@ -439,6 +440,22 @@ function renderActiveRide(ride) {
 
   const cancelBtn = document.getElementById("cancel-ride-btn");
   if (cancelBtn) cancelBtn.addEventListener("click", () => handleCancelRide(ride.id));
+  const shareBtn = document.getElementById("share-btn");
+  if (shareBtn) {
+    shareBtn.addEventListener("click", async () => {
+      const url = `${location.origin}/track.html?ride=${ride.id}&share=${ride.shareToken}`;
+      try {
+        if (navigator.share) await navigator.share({ title: "Track my RideNow ride", url });
+        else {
+          await navigator.clipboard.writeText(url);
+          shareBtn.textContent = "Link copied ✓";
+          setTimeout(() => (shareBtn.textContent = "Copy share link"), 2000);
+        }
+      } catch {
+        prompt("Copy this share link:", url);
+      }
+    });
+  }
 
   if (ride.driver && ride.status !== "cancelled") {
     loadRidePaymentQr(ride);
@@ -718,6 +735,7 @@ async function init() {
   } else {
     showLoggedOutUi();
   }
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
 
 init();

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1024" />
+    <title>RideNow Admin</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <div class="hero-top">
+          <div>
+            <p class="badge">Ops</p>
+            <h1>RideNow Admin</h1>
+            <p class="subtitle">Read-only overview of users, drivers, and rides.</p>
+          </div>
+          <div class="user-box">
+            <a href="./" class="ghost">Rider app</a>
+            <a href="./driver.html" class="ghost">Driver app</a>
+            <button id="logout-btn" type="button" class="ghost hidden">Sign out</button>
+          </div>
+        </div>
+      </header>
+
+      <section id="auth-card" class="card">
+        <h2>Admin sign-in</h2>
+        <p class="meta">Enter the admin token (default <code>rideadmin</code>, override via env var).</p>
+        <form id="auth-form">
+          <label for="admin-token">Admin token</label>
+          <input id="admin-token" type="password" required />
+          <button class="primary" type="submit">Sign in</button>
+          <p id="auth-message" class="form-message" role="status"></p>
+        </form>
+      </section>
+
+      <section id="overview-card" class="card hidden">
+        <h2>Overview</h2>
+        <div id="overview-grid" class="stats-grid"></div>
+      </section>
+
+      <section id="rides-card" class="card hidden">
+        <h2>Rides</h2>
+        <div class="table-wrap">
+          <table id="rides-table"></table>
+        </div>
+      </section>
+
+      <section id="users-card" class="card hidden">
+        <h2>Users</h2>
+        <div class="table-wrap">
+          <table id="users-table"></table>
+        </div>
+      </section>
+
+      <section id="drivers-card" class="card hidden">
+        <h2>Drivers</h2>
+        <div class="table-wrap">
+          <table id="drivers-table"></table>
+        </div>
+      </section>
+    </main>
+    <script src="./admin.js"></script>
+  </body>
+</html>

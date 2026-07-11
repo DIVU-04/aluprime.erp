@@ -68,7 +68,14 @@ function evaluatePromo(codeRaw, { fare, vehicleId }) {
 const users = new Map();
 const tokens = new Map();
 const rides = new Map();
+const shareTokens = new Map();
 const userSockets = new Map();
+
+const drivers = new Map();
+const driverTokens = new Map();
+const driverSockets = new Map();
+
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "rideadmin";
 
 const KNOWN_LOCATIONS = {
   airport: { lat: 12.9499, lng: 77.6681, name: "Airport" },
@@ -163,9 +170,33 @@ function pushToUser(userId, message) {
   }
 }
 
+function pushToDriver(driverId, message) {
+  const sockets = driverSockets.get(driverId);
+  if (!sockets) return;
+  const payload = JSON.stringify(message);
+  for (const socket of sockets) {
+    if (socket.readyState === socket.OPEN) socket.send(payload);
+  }
+}
+
+function broadcastToDrivers(vehicleId, message) {
+  const payload = JSON.stringify(message);
+  for (const [driverId, sockets] of driverSockets.entries()) {
+    const driver = drivers.get(driverId);
+    if (!driver || !driver.online) continue;
+    if (vehicleId && driver.vehicleId !== vehicleId) continue;
+    for (const socket of sockets) {
+      if (socket.readyState === socket.OPEN) socket.send(payload);
+    }
+  }
+}
+
 function publicRide(ride) {
   return {
     id: ride.id,
+    userId: ride.userId,
+    driverUserId: ride.driverUserId || null,
+    shareToken: ride.shareToken,
     pickup: ride.pickup,
     drop: ride.drop,
     vehicleId: ride.vehicleId,
@@ -197,7 +228,8 @@ function interpolate(from, to, t) {
 }
 
 function scheduleRideLifecycle(ride) {
-  const isDone = () => ride.status === "cancelled" || ride.status === "completed";
+  const isDone = () =>
+    ride.status === "cancelled" || ride.status === "completed" || ride.manualControl;
   const setStatus = (status, extra = {}) => {
     if (isDone()) return;
     ride.status = status;
@@ -211,6 +243,8 @@ function scheduleRideLifecycle(ride) {
   };
   ride.driverLocation = driverStart;
 
+  const SIM_WAIT_MS = 3500;
+
   setTimeout(() => {
     if (isDone()) return;
     const name = DRIVER_NAMES[Math.floor(Math.random() * DRIVER_NAMES.length)];
@@ -221,9 +255,10 @@ function scheduleRideLifecycle(ride) {
         Math.floor(1000 + Math.random() * 8999)
       )}`,
       upiId: DRIVER_UPI_POOL[Math.floor(Math.random() * DRIVER_UPI_POOL.length)],
+      simulated: true,
     };
     setStatus("assigned");
-  }, 1500);
+  }, SIM_WAIT_MS + 500);
 
   const arrivingSteps = 6;
   for (let i = 1; i <= arrivingSteps; i += 1) {
@@ -232,10 +267,10 @@ function scheduleRideLifecycle(ride) {
       const t = i / arrivingSteps;
       ride.driverLocation = interpolate(driverStart, ride.pickup, t);
       setStatus(i === arrivingSteps ? "arrived" : "arriving");
-    }, 1500 + i * 700);
+    }, SIM_WAIT_MS + 500 + i * 700);
   }
 
-  const tripStart = 1500 + arrivingSteps * 700 + 800;
+  const tripStart = SIM_WAIT_MS + 500 + arrivingSteps * 700 + 800;
   setTimeout(() => setStatus("in_progress"), tripStart);
 
   const tripSteps = 10;
@@ -448,10 +483,13 @@ app.post("/api/rides", authMiddleware, (req, res) => {
     status: "searching",
     driver: null,
     driverLocation: null,
+    shareToken: crypto.randomBytes(8).toString("hex"),
     createdAt: new Date().toISOString(),
   };
   rides.set(ride.id, ride);
+  shareTokens.set(ride.shareToken, ride.id);
 
+  broadcastToDrivers(ride.vehicleId, { type: "ride:offer", ride: publicRide(ride) });
   scheduleRideLifecycle(ride);
   res.json({ ride: publicRide(ride) });
 });
@@ -577,7 +615,23 @@ const API_ROUTES = [
   { method: "GET", path: "/api/promos", auth: false, description: "List active promos" },
   { method: "POST", path: "/api/promos/validate", auth: false, description: "Validate a promo against a fare" },
   { method: "GET", path: "/api/drivers/nearby", auth: false, description: "Mock nearby drivers around lat/lng" },
-  { method: "WS", path: "/ws?token=...", auth: true, description: "Real-time ride status updates" },
+  { method: "POST", path: "/api/drivers/register", auth: false, description: "Register a driver account" },
+  { method: "POST", path: "/api/drivers/login", auth: false, description: "Driver login" },
+  { method: "GET", path: "/api/drivers/me", auth: true, description: "Current driver profile (driver bearer)" },
+  { method: "POST", path: "/api/drivers/online", auth: true, description: "Toggle driver online/offline" },
+  { method: "POST", path: "/api/drivers/location", auth: true, description: "Update driver location (lat/lng)" },
+  { method: "GET", path: "/api/drivers/rides/available", auth: true, description: "Rides matching driver vehicle" },
+  { method: "GET", path: "/api/drivers/rides/current", auth: true, description: "Driver's active ride" },
+  { method: "POST", path: "/api/drivers/rides/:id/accept", auth: true, description: "Driver accepts a ride" },
+  { method: "POST", path: "/api/drivers/rides/:id/advance", auth: true, description: "Driver advances ride status" },
+  { method: "POST", path: "/api/admin/login", auth: false, description: "Admin token check" },
+  { method: "GET", path: "/api/admin/overview", auth: true, description: "Overview counters (X-Admin-Token)" },
+  { method: "GET", path: "/api/admin/rides", auth: true, description: "List all rides (X-Admin-Token)" },
+  { method: "GET", path: "/api/admin/users", auth: true, description: "List all users (X-Admin-Token)" },
+  { method: "GET", path: "/api/admin/drivers", auth: true, description: "List all drivers (X-Admin-Token)" },
+  { method: "GET", path: "/api/public/rides/:id", auth: false, description: "Public ride tracker (share token)" },
+  { method: "WS", path: "/ws?token=...", auth: true, description: "Rider real-time ride updates" },
+  { method: "WS", path: "/ws?driverToken=...", auth: true, description: "Driver real-time ride offers" },
 ];
 
 app.get("/api", (_req, res) => {
@@ -604,6 +658,222 @@ app.get("/api/openapi.json", (_req, res) => {
     securitySchemes: { bearerAuth: { type: "http", scheme: "bearer" } },
   };
   res.json(spec);
+});
+
+function driverAuth(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  const driverId = token ? driverTokens.get(token) : null;
+  if (!driverId || !drivers.has(driverId)) {
+    return res.status(401).json({ error: "driver unauthorized" });
+  }
+  req.driverId = driverId;
+  req.driver = drivers.get(driverId);
+  next();
+}
+
+function publicDriver(driver) {
+  return {
+    id: driver.id,
+    username: driver.username,
+    name: driver.name,
+    vehicleId: driver.vehicleId,
+    vehicleNumber: driver.vehicleNumber,
+    rating: driver.rating,
+    upiId: driver.upiId,
+    online: !!driver.online,
+    location: driver.location || null,
+    createdAt: driver.createdAt,
+  };
+}
+
+app.post("/api/drivers/register", (req, res) => {
+  const { username, password, name, vehicleId, vehicleNumber, upiId } = req.body || {};
+  if (!username || !password || password.length < 4 || !name || !VEHICLES[vehicleId]) {
+    return res.status(400).json({ error: "username, password (4+), name, valid vehicleId required" });
+  }
+  const normalized = String(username).trim().toLowerCase();
+  if ([...drivers.values()].some((d) => d.username === normalized)) {
+    return res.status(409).json({ error: "driver username already taken" });
+  }
+  const driver = {
+    id: newId("drv"),
+    username: normalized,
+    passwordHash: sha256(password),
+    name: String(name).trim(),
+    vehicleId,
+    vehicleNumber: vehicleNumber ? String(vehicleNumber).trim() : `KA-${Math.floor(10 + Math.random() * 89)}-${Math.floor(1000 + Math.random() * 8999)}`,
+    rating: 4.5,
+    upiId: upiId && UPI_REGEX.test(String(upiId)) ? String(upiId).trim() : null,
+    online: false,
+    location: null,
+    createdAt: new Date().toISOString(),
+  };
+  drivers.set(driver.id, driver);
+  const token = newId("dtok");
+  driverTokens.set(token, driver.id);
+  res.json({ token, driver: publicDriver(driver) });
+});
+
+app.post("/api/drivers/login", (req, res) => {
+  const { username, password } = req.body || {};
+  const normalized = String(username || "").trim().toLowerCase();
+  const driver = [...drivers.values()].find((d) => d.username === normalized);
+  if (!driver || driver.passwordHash !== sha256(password || "")) {
+    return res.status(401).json({ error: "invalid driver credentials" });
+  }
+  const token = newId("dtok");
+  driverTokens.set(token, driver.id);
+  res.json({ token, driver: publicDriver(driver) });
+});
+
+app.get("/api/drivers/me", driverAuth, (req, res) => {
+  res.json({ driver: publicDriver(req.driver) });
+});
+
+app.post("/api/drivers/online", driverAuth, (req, res) => {
+  req.driver.online = !!(req.body && req.body.online);
+  res.json({ driver: publicDriver(req.driver) });
+});
+
+app.post("/api/drivers/location", driverAuth, (req, res) => {
+  const lat = Number(req.body && req.body.lat);
+  const lng = Number(req.body && req.body.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return res.status(400).json({ error: "lat and lng required" });
+  }
+  req.driver.location = { lat, lng };
+  const activeRide = [...rides.values()].find(
+    (r) => r.driverUserId === req.driverId && r.status !== "completed" && r.status !== "cancelled"
+  );
+  if (activeRide) {
+    activeRide.driverLocation = { lat, lng };
+    pushToUser(activeRide.userId, { type: "ride:update", ride: publicRide(activeRide) });
+  }
+  res.json({ driver: publicDriver(req.driver) });
+});
+
+app.get("/api/drivers/rides/available", driverAuth, (req, res) => {
+  const list = [...rides.values()]
+    .filter((r) => r.status === "searching" && r.vehicleId === req.driver.vehicleId && !r.driverUserId)
+    .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1))
+    .map(publicRide);
+  res.json({ rides: list });
+});
+
+app.get("/api/drivers/rides/current", driverAuth, (req, res) => {
+  const ride = [...rides.values()].find(
+    (r) => r.driverUserId === req.driverId && r.status !== "completed" && r.status !== "cancelled"
+  );
+  res.json({ ride: ride ? publicRide(ride) : null });
+});
+
+app.post("/api/drivers/rides/:id/accept", driverAuth, (req, res) => {
+  const ride = rides.get(req.params.id);
+  if (!ride) return res.status(404).json({ error: "not found" });
+  if (ride.status !== "searching" || ride.driverUserId) {
+    return res.status(400).json({ error: "ride not available" });
+  }
+  if (ride.vehicleId !== req.driver.vehicleId) {
+    return res.status(400).json({ error: "vehicle mismatch" });
+  }
+  ride.driverUserId = req.driverId;
+  ride.manualControl = true;
+  ride.driver = {
+    name: req.driver.name,
+    rating: req.driver.rating,
+    vehicleNumber: req.driver.vehicleNumber,
+    upiId: req.driver.upiId,
+    simulated: false,
+  };
+  ride.driverLocation = req.driver.location || ride.driverLocation;
+  ride.status = "assigned";
+  pushToUser(ride.userId, { type: "ride:update", ride: publicRide(ride) });
+  broadcastToDrivers(ride.vehicleId, { type: "ride:taken", rideId: ride.id });
+  res.json({ ride: publicRide(ride) });
+});
+
+const DRIVER_ADVANCE = {
+  assigned: "arriving",
+  arriving: "arrived",
+  arrived: "in_progress",
+  in_progress: "completed",
+};
+
+app.post("/api/drivers/rides/:id/advance", driverAuth, (req, res) => {
+  const ride = rides.get(req.params.id);
+  if (!ride || ride.driverUserId !== req.driverId) return res.status(404).json({ error: "not found" });
+  const next = DRIVER_ADVANCE[ride.status];
+  if (!next) return res.status(400).json({ error: `cannot advance from ${ride.status}` });
+  ride.status = next;
+  if (next === "completed") ride.completedAt = new Date().toISOString();
+  pushToUser(ride.userId, { type: "ride:update", ride: publicRide(ride) });
+  res.json({ ride: publicRide(ride) });
+});
+
+function adminAuth(req, res, next) {
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== ADMIN_TOKEN) return res.status(401).json({ error: "admin unauthorized" });
+  next();
+}
+
+app.post("/api/admin/login", (req, res) => {
+  const token = req.body && req.body.token;
+  if (token !== ADMIN_TOKEN) return res.status(401).json({ error: "invalid admin token" });
+  res.json({ ok: true });
+});
+
+app.get("/api/admin/overview", adminAuth, (_req, res) => {
+  const ridesArr = [...rides.values()];
+  const grouped = ridesArr.reduce((acc, r) => {
+    acc[r.status] = (acc[r.status] || 0) + 1;
+    return acc;
+  }, {});
+  const totalRevenue = ridesArr
+    .filter((r) => r.status === "completed")
+    .reduce((n, r) => n + r.fare, 0);
+  res.json({
+    users: users.size,
+    drivers: drivers.size,
+    driversOnline: [...drivers.values()].filter((d) => d.online).length,
+    rides: ridesArr.length,
+    ridesByStatus: grouped,
+    revenue: totalRevenue,
+    uptimeSeconds: Math.round(process.uptime()),
+  });
+});
+
+app.get("/api/admin/rides", adminAuth, (_req, res) => {
+  res.json({
+    rides: [...rides.values()]
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      .map(publicRide),
+  });
+});
+
+app.get("/api/admin/users", adminAuth, (_req, res) => {
+  res.json({
+    users: [...users.values()].map((u) => ({
+      id: u.id,
+      username: u.username,
+      upiId: u.upiId,
+      createdAt: u.createdAt,
+    })),
+  });
+});
+
+app.get("/api/admin/drivers", adminAuth, (_req, res) => {
+  res.json({ drivers: [...drivers.values()].map(publicDriver) });
+});
+
+app.get("/api/public/rides/:id", (req, res) => {
+  const ride = rides.get(req.params.id);
+  const share = req.query.share;
+  if (!ride || !share || ride.shareToken !== share) return res.status(404).json({ error: "not found" });
+  const pub = publicRide(ride);
+  delete pub.userId;
+  delete pub.driverUserId;
+  res.json({ ride: pub });
 });
 
 app.get("/api/docs", (_req, res) => {
@@ -643,6 +913,30 @@ const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (socket, req) => {
   const url = new URL(req.url, "http://localhost");
   const token = url.searchParams.get("token");
+  const driverTok = url.searchParams.get("driverToken");
+
+  if (driverTok) {
+    const driverId = driverTokens.get(driverTok);
+    if (!driverId) return socket.close(4001, "unauthorized");
+    if (!driverSockets.has(driverId)) driverSockets.set(driverId, new Set());
+    driverSockets.get(driverId).add(socket);
+    const driver = drivers.get(driverId);
+    if (driver) driver.online = true;
+    socket.send(JSON.stringify({ type: "hello", driverId }));
+    socket.on("close", () => {
+      const set = driverSockets.get(driverId);
+      if (set) {
+        set.delete(socket);
+        if (set.size === 0) {
+          driverSockets.delete(driverId);
+          const d = drivers.get(driverId);
+          if (d) d.online = false;
+        }
+      }
+    });
+    return;
+  }
+
   const userId = token ? tokens.get(token) : null;
   if (!userId) {
     socket.close(4001, "unauthorized");

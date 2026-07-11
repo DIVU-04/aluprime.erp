@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1024" />
     <title>RideNow - Book bikes, autos, and cabs</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -24,6 +27,8 @@
             </p>
           </div>
           <div id="user-box" class="user-box hidden">
+            <a href="./driver.html" class="ghost">Driver app</a>
+            <a href="./admin.html" class="ghost">Admin</a>
             <span id="username-label"></span>
             <button id="logout-btn" type="button" class="ghost">Log out</button>
           </div>
