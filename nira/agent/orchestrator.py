@@ -11,6 +11,7 @@ from nira.memory.long_term import LongTermMemory
 from nira.memory.short_term import ShortTermMemory
 from nira.memory.user_profile import UserProfile
 from nira.output.response import AgentResponse, OutputMode, ResponseDeliverer
+from nira.perception.voice import VoiceEngine
 from nira.perception.context import ContextBuilder
 from nira.perception.nlp import parse_intent
 from nira.tools.calendar import CalendarTool
@@ -31,8 +32,14 @@ class NiraAgent:
         self._init_memory()
         self._init_tools()
         self._init_brain()
+        self._init_voice()
         self._init_output()
         self._init_feedback()
+
+    def _init_voice(self) -> None:
+        self.voice: VoiceEngine | None = None
+        if self.settings.voice_enabled or self.settings.voice_output:
+            self.voice = VoiceEngine(self.settings)
 
     def _init_storage(self) -> None:
         self.settings.data_dir.mkdir(parents=True, exist_ok=True)
@@ -70,6 +77,8 @@ class NiraAgent:
         self.deliverer = ResponseDeliverer(
             agent_name=self.settings.agent_name,
             futuristic=self.settings.futuristic_ui,
+            voice=self.voice,
+            voice_output=self.settings.voice_output and self.settings.voice_enabled,
         )
 
     def _init_feedback(self) -> None:

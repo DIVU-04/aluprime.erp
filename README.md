@@ -49,6 +49,18 @@ python3 -m nira.main
 python3 -m nira.main --classic
 ```
 
+**Voice mode (speak & listen):**
+```bash
+pip install -r requirements-voice.txt
+python3 -m nira.main --voice
+```
+
+**Wake-word mode:**
+```bash
+python3 -m nira.main --voice --wake
+# Say "Hey Nira" then your command
+```
+
 **Single message:**
 ```bash
 python -m nira.main "What's on my calendar today?"
@@ -71,6 +83,7 @@ python -m nira.main --schedule "Daily briefing"
 | `quit` / `exit` | End the session |
 | `/clear` | Reset conversation memory |
 | `/status` | Show agent configuration |
+| `/voice` | Toggle voice input/output on or off |
 
 ## Example Interactions
 
@@ -145,6 +158,30 @@ nira/
 | `NIRA_AGENT_NAME` | `Nira` | Agent display name |
 | `NIRA_DATA_DIR` | `./data` | Data storage directory |
 | `NIRA_FUTURISTIC_UI` | `true` | Enable FutureStick HUD interface |
+| `NIRA_VOICE_ENABLED` | `false` | Enable voice by default |
+| `NIRA_WAKE_WORD` | `nira` | Wake word (say "Hey Nira") |
+| `NIRA_TTS_RATE` | `175` | Speech rate for text-to-speech |
+
+## Voice Setup
+
+```bash
+# Linux
+sudo apt install portaudio19-dev espeak
+pip install -r requirements-voice.txt
+
+# macOS
+brew install portaudio espeak
+pip install -r requirements-voice.txt
+```
+
+| Mode | Command |
+|------|---------|
+| Voice chat | `python3 -m nira.main --voice` |
+| Wake word | `python3 -m nira.main --voice --wake` |
+| Toggle in chat | `/voice` |
+| Speak one reply | `python3 -m nira.main "Hello" --speak` |
+
+Say **"Hey Nira"** followed by your command, or speak directly in voice mode.
 
 ## Demo Mode
 

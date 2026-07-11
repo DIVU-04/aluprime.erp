@@ -106,6 +106,23 @@ class FutureStickHUD:
             f"[{self.theme.user_prompt}]▶ OPERATOR[/] [{self.theme.dim}]│[/] "
         ).strip()
 
+    def listening(self, wake_word: str = "nira") -> None:
+        """Show microphone listening indicator."""
+        self.console.print(
+            Align.center(
+                Text(
+                    f"◉ LISTENING — say \"Hey {wake_word.title()}\" or speak your command",
+                    style=f"bold {self.theme.secondary}",
+                )
+            )
+        )
+
+    def speaking(self) -> None:
+        """Brief speaking indicator."""
+        self.console.print(
+            Text(f"  ◇ {self.agent_name} speaking...", style=self.theme.accent)
+        )
+
     def thinking(self, intent: str = "processing") -> None:
         """Brief animated thinking indicator."""
         frames = ["◐", "◓", "◑", "◒"]
@@ -171,6 +188,8 @@ class FutureStickHUD:
         table.add_row("AGENT", settings.agent_name)
         table.add_row("INTERFACE", self.theme.name)
         table.add_row("MODE", f"[{self.theme.success if has_key else self.theme.warning}]{mode}[/]")
+        table.add_row("VOICE", self._voice_status(agent))
+        table.add_row("WAKE WORD", f"\"Hey {settings.wake_word.title()}\"")
         table.add_row("MODEL", settings.llm_model)
         table.add_row("TOOLS ONLINE", str(len(tools)))
         table.add_row("MEMORY NODES", str(len(agent.long_term.get_facts())))
@@ -216,3 +235,13 @@ class FutureStickHUD:
         self.console.print(
             f"  [{self.theme.accent}]{pulse}[/] [{self.theme.dim}]ACTION[/] │ {text}"
         )
+
+    @staticmethod
+    def _voice_status(agent: "NiraAgent") -> str:
+        from nira.perception.voice import VoiceEngine
+
+        if not VoiceEngine.is_available():
+            return "OFFLINE (install voice deps)"
+        mic = "MIC OK" if VoiceEngine.microphone_available() else "MIC UNAVAILABLE"
+        mode = "ACTIVE" if agent.settings.voice_enabled else "STANDBY"
+        return f"{mode} // {mic}"
