@@ -49,6 +49,19 @@ def test_agent_demo_mode(temp_settings: Settings):
     assert "Nira" in response
 
 
+def test_agent_futuristic_ui(temp_settings: Settings):
+    temp_settings.futuristic_ui = True
+    agent = NiraAgent(temp_settings)
+    assert agent.deliverer.hud is not None
+    assert agent.deliverer.hud.theme.name == "FutureStick"
+
+
+def test_agent_classic_ui(temp_settings: Settings):
+    temp_settings.futuristic_ui = False
+    agent = NiraAgent(temp_settings)
+    assert agent.deliverer.hud is None
+
+
 def test_tool_registry():
     registry = ToolRegistry()
     tool = SmartHomeTool(Path("/tmp/test_smart_home.json"))

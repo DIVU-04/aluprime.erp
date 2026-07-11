@@ -2,6 +2,8 @@
 
 **Nira** is your personal AI assistant — inspired by Jarvis. It listens, reasons, uses tools, remembers context, and acts on your behalf.
 
+Powered by the **FutureStick** interface — a futuristic HUD with boot sequence, neon panels, live processing animations, and system status dashboards.
+
 ## Architecture
 
 Nira follows a layered architecture matching the agent flowchart:
@@ -37,9 +39,14 @@ cp .env.example .env
 
 ### 3. Run
 
-**Interactive mode:**
+**Interactive mode (FutureStick HUD):**
 ```bash
-python -m nira.main
+python3 -m nira.main
+```
+
+**Classic UI:**
+```bash
+python3 -m nira.main --classic
 ```
 
 **Single message:**
@@ -137,6 +144,7 @@ nira/
 | `NIRA_LLM_MODEL` | `gpt-4o-mini` | Model name |
 | `NIRA_AGENT_NAME` | `Nira` | Agent display name |
 | `NIRA_DATA_DIR` | `./data` | Data storage directory |
+| `NIRA_FUTURISTIC_UI` | `true` | Enable FutureStick HUD interface |
 
 ## Demo Mode
 

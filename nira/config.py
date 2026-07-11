@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     max_tool_iterations: int = 8
     short_term_memory_limit: int = 20
     web_search_enabled: bool = True
+    futuristic_ui: bool = True
 
     @property
     def memory_dir(self) -> Path:

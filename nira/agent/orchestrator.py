@@ -67,7 +67,10 @@ class NiraAgent:
         self.brain = LLMBrain(self.settings, self.tools)
 
     def _init_output(self) -> None:
-        self.deliverer = ResponseDeliverer(agent_name=self.settings.agent_name)
+        self.deliverer = ResponseDeliverer(
+            agent_name=self.settings.agent_name,
+            futuristic=self.settings.futuristic_ui,
+        )
 
     def _init_feedback(self) -> None:
         self.logger = InteractionLogger(self.settings.logs_dir)
@@ -88,6 +91,9 @@ class NiraAgent:
             plan = self.planner.create_plan(context)
 
         # 4. Brain — LLM reasoning with tool loop
+        hud = self.deliverer.hud
+        if hud:
+            hud.thinking(intent.intent.value)
         response_text, tool_log = self.brain.reason(context, plan)
 
         # 5. Output — deliver response
