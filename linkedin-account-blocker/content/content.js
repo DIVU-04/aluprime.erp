@@ -140,7 +140,86 @@ function applyBlocklist(root = document) {
       hidePost(post, info);
     }
   });
+  hideComments(root);
+  hideEntities(root);
   injectBlockButtons(root);
+}
+
+/* ------------------------------------------------------------------ */
+/* Hiding comments                                                    */
+/* ------------------------------------------------------------------ */
+
+const COMMENT_SELECTORS = [
+  "article.comments-comment-entity",
+  "div.comments-comment-item",
+  "div.comments-comment-entity",
+];
+
+function getCommentAuthor(el) {
+  const info = { slug: null, name: null };
+  const link = el.querySelector('a[href*="/in/"]');
+  if (link) info.slug = slugFromUrl(link.getAttribute("href"));
+  const nameEl =
+    el.querySelector(".comments-comment-meta__description-title") ||
+    el.querySelector(".comments-comment-meta__actor span[aria-hidden='true']");
+  if (nameEl) info.name = normalizeName(nameEl.textContent);
+  return info;
+}
+
+function hideComments(root = document) {
+  const set = new Set();
+  COMMENT_SELECTORS.forEach((sel) =>
+    root.querySelectorAll(sel).forEach((n) => set.add(n))
+  );
+  set.forEach((comment) => {
+    if (comment.dataset.labHandled === "hidden") return;
+    const info = getCommentAuthor(comment);
+    if (isBlocked(info)) {
+      comment.dataset.labHandled = "hidden";
+      comment.classList.add("lab-hidden-post");
+    }
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Hiding entity cards (search results, People You May Know, etc.)    */
+/* ------------------------------------------------------------------ */
+
+const ENTITY_SELECTORS = [
+  "li.reusable-search__result-container",
+  "div.entity-result",
+  "li.entity-result",
+  "section.mn-pymk-list__card",
+  "li.discover-entity-type-card",
+  "div.discover-entity-type-card",
+];
+
+function getEntityAuthor(el) {
+  const info = { slug: null, name: null };
+  const link = el.querySelector('a[href*="/in/"]');
+  if (link) info.slug = slugFromUrl(link.getAttribute("href"));
+  const nameEl =
+    el.querySelector(".entity-result__title-text a span[aria-hidden='true']") ||
+    el.querySelector(".entity-result__title-text span[aria-hidden='true']") ||
+    el.querySelector(".discover-person-card__name") ||
+    el.querySelector(".member-name");
+  if (nameEl) info.name = normalizeName(nameEl.textContent);
+  return info;
+}
+
+function hideEntities(root = document) {
+  const set = new Set();
+  ENTITY_SELECTORS.forEach((sel) =>
+    root.querySelectorAll(sel).forEach((n) => set.add(n))
+  );
+  set.forEach((entity) => {
+    if (entity.dataset.labHandled === "hidden") return;
+    const info = getEntityAuthor(entity);
+    if (isBlocked(info)) {
+      entity.dataset.labHandled = "hidden";
+      entity.classList.add("lab-hidden-post");
+    }
+  });
 }
 
 function hidePost(post, info) {

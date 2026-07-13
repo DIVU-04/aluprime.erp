@@ -39,6 +39,16 @@
       </div>
       <ul id="blocklist" class="blocklist"></ul>
       <p id="empty-state" class="empty">No accounts blocked yet.</p>
+
+      <div class="backup-row">
+        <button id="export-btn" type="button" class="ghost-btn">
+          Export backup
+        </button>
+        <button id="import-btn" type="button" class="ghost-btn">
+          Import backup
+        </button>
+        <input type="file" id="import-file" accept="application/json" hidden />
+      </div>
     </section>
 
     <footer class="footer">

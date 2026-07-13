@@ -17,9 +17,11 @@ post so you can add its author with one click.
 
 ## Features
 
-- Hide all posts from accounts you've blocked, right in the feed.
+- Hide content from accounts you've blocked across the **feed**, **comments**,
+  and **search / "People you may know"** results.
 - One-click **Block** button injected on every post.
 - Popup UI to add accounts by name and/or profile URL/slug, and to unblock.
+- **Export / Import** your blocklist as a JSON backup (import merges & dedupes).
 - "Show anyway" link on each hidden post if you want to peek.
 - Blocklist syncs across your signed-in browsers via `chrome.storage.sync`.
 

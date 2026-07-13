@@ -188,6 +188,28 @@ body {
   padding: 12px 0;
 }
 
+.backup-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ghost-btn {
+  flex: 1;
+  background: #fff;
+  border: 1px solid var(--brand);
+  color: var(--brand);
+  border-radius: 16px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ghost-btn:hover {
+  background: var(--bg-muted);
+}
+
 .footer {
   padding: 10px 16px 14px;
   font-size: 11px;

@@ -11,6 +11,9 @@ const els = {
   count: document.getElementById("count"),
   empty: document.getElementById("empty-state"),
   clear: document.getElementById("clear-btn"),
+  export: document.getElementById("export-btn"),
+  import: document.getElementById("import-btn"),
+  importFile: document.getElementById("import-file"),
 };
 
 function slugFromUrl(url) {
@@ -140,6 +143,70 @@ els.add.addEventListener("click", addAccount);
 els.clear.addEventListener("click", async () => {
   await setBlocklist([]);
   render([]);
+});
+
+/* ------------------------------------------------------------------ */
+/* Export / Import backup                                             */
+/* ------------------------------------------------------------------ */
+
+els.export.addEventListener("click", async () => {
+  const list = await getBlocklist();
+  const payload = {
+    type: "linkedin-account-blocker",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    accounts: list,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "linkedin-account-blocker-backup.json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+els.import.addEventListener("click", () => els.importFile.click());
+
+els.importFile.addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      const incoming = Array.isArray(parsed) ? parsed : parsed.accounts;
+      if (!Array.isArray(incoming)) throw new Error("bad format");
+
+      const current = await getBlocklist();
+      const merged = current.slice();
+      let added = 0;
+      incoming.forEach((raw) => {
+        const name = (raw && raw.name) || "";
+        const slug = slugFromUrl((raw && raw.slug) || "") || (raw && raw.slug) || "";
+        if (!name && !slug) return;
+        const dup = merged.some(
+          (a) =>
+            (slug && a.slug === slug) ||
+            (!slug && normalizeName(a.name) === normalizeName(name))
+        );
+        if (dup) return;
+        merged.push({ name, slug, addedAt: raw.addedAt || Date.now() });
+        added += 1;
+      });
+
+      await setBlocklist(merged);
+      render(merged);
+      showHint(`Imported ${added} new account${added === 1 ? "" : "s"}.`, "ok");
+    } catch (err) {
+      showHint("Could not import: invalid backup file.", "error");
+    } finally {
+      els.importFile.value = "";
+    }
+  };
+  reader.readAsText(file);
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
