@@ -1,0 +1,98 @@
+<div class="page-header">
+  <h2>Dashboard</h2>
+  <p class="text-muted">Overview of your fenestration business</p>
+</div>
+
+<div *ngIf="data; else loading">
+  <div class="row g-3 mb-4">
+    <div class="col-md-3" *ngFor="let card of [
+      { label: 'Accounts', value: data.summary.accounts, icon: 'bi-people', color: '#1a3a5c' },
+      { label: 'Opportunities', value: data.summary.opportunities, icon: 'bi-funnel', color: '#2d6a9f' },
+      { label: 'Quotations', value: data.summary.quotations, icon: 'bi-file-earmark-text', color: '#4a90c2' },
+      { label: 'Orders', value: data.summary.orders, icon: 'bi-cart-check', color: '#28a745' }
+    ]">
+      <div class="stat-card">
+        <div class="stat-icon" [style.background]="card.color + '20'" [style.color]="card.color">
+          <i class="bi" [class]="card.icon"></i>
+        </div>
+        <div>
+          <div class="stat-value">{{ card.value }}</div>
+          <div class="stat-label">{{ card.label }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header">Pipeline Value</div>
+        <div class="card-body">
+          <h3 class="text-primary">{{ formatCurrency(data.financials.pipelineValue) }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header">Quotation Value</div>
+        <div class="card-body">
+          <h3 class="text-info">{{ formatCurrency(data.financials.quotationValue) }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header">Order Value</div>
+        <div class="card-body">
+          <h3 class="text-success">{{ formatCurrency(data.financials.orderValue) }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Production Status</div>
+        <div class="card-body">
+          <div class="d-flex gap-4">
+            <div><span class="badge bg-secondary">{{ data.production.scheduled }}</span> Scheduled</div>
+            <div><span class="badge bg-warning">{{ data.production.inProgress }}</span> In Progress</div>
+            <div><span class="badge bg-success">{{ data.production.completed }}</span> Completed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Recent Quotations</div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Quote #</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let q of data.recentQuotations">
+                <td>{{ q.quoteNumber }}</td>
+                <td>{{ q.customerName }}</td>
+                <td>{{ formatCurrency(q.total) }}</td>
+                <td><span class="badge bg-light text-dark">{{ q.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+</ng-template>

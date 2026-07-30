@@ -1,0 +1,52 @@
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div><h2>{{ title }}</h2><p class="text-muted mb-0">{{ subtitle }}</p></div>
+  <button class="btn btn-primary" (click)="openForm()"><i class="bi bi-plus-lg"></i> Add Item</button>
+</div>
+
+<div class="card">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Qty</th><th>Unit</th><th>Location</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let item of items" [class.table-warning]="isLowStock(item)">
+        <td><code>{{ item.sku }}</code></td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.category }}</td>
+        <td><strong>{{ item.quantityOnHand }}</strong></td>
+        <td>{{ item.unit }}</td>
+        <td>{{ item.location }}</td>
+        <td><span class="badge" [class.bg-danger]="isLowStock(item)" [class.bg-success]="!isLowStock(item)">
+          {{ isLowStock(item) ? 'Low Stock' : 'OK' }}
+        </span></td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-success me-1" (click)="adjustStock(item.id, 10)" title="Add 10"><i class="bi bi-plus"></i></button>
+          <button class="btn btn-sm btn-outline-warning me-1" (click)="adjustStock(item.id, -10)" title="Remove 10"><i class="bi bi-dash"></i></button>
+          <button class="btn btn-sm btn-outline-primary me-1" (click)="openForm(item)"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger" (click)="delete(item.id)"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-backdrop" *ngIf="showForm" (click)="showForm=false"></div>
+<div class="modal-dialog-custom" *ngIf="showForm">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between">
+      <span>{{ formData['id'] ? 'Edit' : 'Add' }} Item</span>
+      <button class="btn-close" (click)="showForm=false"></button>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-6 mb-2"><label class="form-label">SKU</label><input class="form-control" [(ngModel)]="formData['sku']"></div>
+        <div class="col-6 mb-2"><label class="form-label">Name</label><input class="form-control" [(ngModel)]="formData['name']"></div>
+        <div class="col-6 mb-2"><label class="form-label">Category</label><input class="form-control" [(ngModel)]="formData['category']"></div>
+        <div class="col-6 mb-2"><label class="form-label">Unit</label><input class="form-control" [(ngModel)]="formData['unit']"></div>
+        <div class="col-4 mb-2"><label class="form-label">Qty on Hand</label><input type="number" class="form-control" [(ngModel)]="formData['quantityOnHand']"></div>
+        <div class="col-4 mb-2"><label class="form-label">Reorder Level</label><input type="number" class="form-control" [(ngModel)]="formData['reorderLevel']"></div>
+        <div class="col-4 mb-2"><label class="form-label">Unit Cost</label><input type="number" class="form-control" [(ngModel)]="formData['unitCost']"></div>
+        <div class="col-12 mb-2"><label class="form-label">Location</label><input class="form-control" [(ngModel)]="formData['location']"></div>
+      </div>
+      <button class="btn btn-primary" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>

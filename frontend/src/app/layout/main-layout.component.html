@@ -1,0 +1,48 @@
+<div class="app-shell" [class.collapsed]="sidebarCollapsed">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo" *ngIf="!sidebarCollapsed">
+        <strong>AluPrime</strong>
+        <small>ERP Cloud</small>
+      </div>
+      <button class="btn btn-link text-white p-0" (click)="toggleSidebar()">
+        <i class="bi" [class.bi-list]="sidebarCollapsed" [class.bi-chevron-left]="!sidebarCollapsed"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div *ngFor="let section of sections" class="nav-section">
+        <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ section }}</div>
+        <a
+          *ngFor="let item of itemsForSection(section)"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-item"
+          [title]="item.label"
+        >
+          <i class="bi" [class]="item.icon"></i>
+          <span *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-title">Fenestration ERP Platform</div>
+      <div class="topbar-actions">
+        <span class="user-name" *ngIf="auth.currentUser() as user">
+          {{ user.firstName }} {{ user.lastName }}
+          <small class="text-muted">({{ user.role }})</small>
+        </span>
+        <button class="btn btn-outline-secondary btn-sm" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

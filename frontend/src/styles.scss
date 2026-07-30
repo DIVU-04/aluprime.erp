@@ -1,0 +1,75 @@
+@import 'bootstrap/scss/bootstrap';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+  --primary: #1a3a5c;
+  --primary-light: #2d6a9f;
+  --accent: #4a90c2;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  background: #f0f2f5;
+}
+
+.page-header h2 {
+  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+
+  &:hover {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.modal-dialog-custom {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1050;
+  width: 90%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6c757d;
+  border-bottom-width: 1px;
+}
+
+.nav-tabs .nav-link {
+  cursor: pointer;
+  color: #6c757d;
+
+  &.active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+}

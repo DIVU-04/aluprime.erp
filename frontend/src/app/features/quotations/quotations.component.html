@@ -1,0 +1,50 @@
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div><h2>Quotation Management (QMS)</h2><p class="text-muted mb-0">Create and manage quotations</p></div>
+  <button class="btn btn-primary" (click)="openForm()"><i class="bi bi-plus-lg"></i> New Quotation</button>
+</div>
+
+<div class="card">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Quote #</th><th>Project</th><th>Customer</th><th>Total</th><th>Status</th><th>Rev</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let q of quotations">
+        <td><strong>{{ q.quoteNumber }}</strong></td>
+        <td>{{ q.projectName }}</td>
+        <td>{{ q.customerName }}</td>
+        <td>{{ formatCurrency(q.total) }}</td>
+        <td><span class="badge" [class.bg-success]="q.status==='sent'" [class.bg-secondary]="q.status==='draft'">{{ q.status }}</span></td>
+        <td>v{{ q.revision }}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-info me-1" (click)="revise(q.id)" title="Revise"><i class="bi bi-copy"></i></button>
+          <button class="btn btn-sm btn-outline-primary me-1" (click)="openForm(q)"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger" (click)="delete(q.id)"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-backdrop" *ngIf="showForm" (click)="showForm=false"></div>
+<div class="modal-dialog-custom" *ngIf="showForm">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between">
+      <span>{{ formData['id'] ? 'Edit' : 'New' }} Quotation</span>
+      <button class="btn-close" (click)="showForm=false"></button>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-2"><label class="form-label">Project Name</label><input class="form-control" [(ngModel)]="formData['projectName']"></div>
+        <div class="col-md-6 mb-2"><label class="form-label">Customer</label><input class="form-control" [(ngModel)]="formData['customerName']"></div>
+        <div class="col-md-6 mb-2"><label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="formData['status']">
+            <option value="draft">Draft</option><option value="sent">Sent</option>
+            <option value="approved">Approved</option><option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-2"><label class="form-label">Valid Until</label><input type="date" class="form-control" [(ngModel)]="formData['validUntil']"></div>
+        <div class="col-12 mb-2"><label class="form-label">Notes</label><textarea class="form-control" [(ngModel)]="formData['notes']"></textarea></div>
+      </div>
+      <button class="btn btn-primary" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>

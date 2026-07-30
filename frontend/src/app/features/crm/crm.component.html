@@ -1,0 +1,119 @@
+<div class="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>CRM</h2>
+    <p class="text-muted mb-0">Manage accounts, contacts & sales pipeline</p>
+  </div>
+  <button class="btn btn-primary" (click)="openForm()">
+    <i class="bi bi-plus-lg"></i> Add {{ activeTab === 'accounts' ? 'Account' : activeTab === 'contacts' ? 'Contact' : 'Opportunity' }}
+  </button>
+</div>
+
+<div class="row g-3 mb-3" *ngIf="dashboard">
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">Total Accounts</div>
+      <h4>{{ dashboard.totalAccounts }}</h4>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">Pipeline Value</div>
+      <h4>{{ formatCurrency(dashboard.pipelineValue) }}</h4>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card"><div class="card-body">
+      <div class="text-muted small">Opportunities</div>
+      <h4>{{ dashboard.totalOpportunities }}</h4>
+    </div></div>
+  </div>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='accounts'" (click)="activeTab='accounts'" href="#">Accounts</a></li>
+  <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='contacts'" (click)="activeTab='contacts'" href="#">Contacts</a></li>
+  <li class="nav-item"><a class="nav-link" [class.active]="activeTab==='opportunities'" (click)="activeTab='opportunities'" href="#">Opportunities</a></li>
+</ul>
+
+<div class="card" *ngIf="activeTab === 'accounts'">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Name</th><th>Type</th><th>City</th><th>Phone</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let a of accounts">
+        <td>{{ a.name }}</td><td>{{ a.type }}</td><td>{{ a.city }}</td><td>{{ a.phone }}</td>
+        <td><span class="badge bg-success">{{ a.status }}</span></td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary me-1" (click)="openForm(a)"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger" (click)="delete(a.id)"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" *ngIf="activeTab === 'contacts'">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let c of contacts">
+        <td>{{ c.firstName }} {{ c.lastName }}</td><td>{{ c.email }}</td><td>{{ c.phone }}</td><td>{{ c.role }}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary me-1" (click)="openForm(c)"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger" (click)="delete(c.id)"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" *ngIf="activeTab === 'opportunities'">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Title</th><th>Stage</th><th>Value</th><th>Location</th><th>Assigned</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let o of opportunities">
+        <td>{{ o.title }}</td><td><span class="badge bg-info">{{ o.stage }}</span></td>
+        <td>{{ formatCurrency(o.value) }}</td><td>{{ o.location }}</td><td>{{ o.assignedTo }}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary me-1" (click)="openForm(o)"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger" (click)="delete(o.id)"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-backdrop" *ngIf="showForm" (click)="showForm=false"></div>
+<div class="modal-dialog-custom" *ngIf="showForm">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between">
+      <span>{{ formData['id'] ? 'Edit' : 'Add' }} Record</span>
+      <button class="btn-close" (click)="showForm=false"></button>
+    </div>
+    <div class="card-body">
+      <ng-container *ngIf="activeTab === 'accounts'">
+        <div class="mb-2"><label class="form-label">Name</label><input class="form-control" [(ngModel)]="formData['name']"></div>
+        <div class="mb-2"><label class="form-label">Type</label><input class="form-control" [(ngModel)]="formData['type']"></div>
+        <div class="mb-2"><label class="form-label">Phone</label><input class="form-control" [(ngModel)]="formData['phone']"></div>
+        <div class="mb-2"><label class="form-label">City</label><input class="form-control" [(ngModel)]="formData['city']"></div>
+      </ng-container>
+      <ng-container *ngIf="activeTab === 'contacts'">
+        <div class="mb-2"><label class="form-label">First Name</label><input class="form-control" [(ngModel)]="formData['firstName']"></div>
+        <div class="mb-2"><label class="form-label">Last Name</label><input class="form-control" [(ngModel)]="formData['lastName']"></div>
+        <div class="mb-2"><label class="form-label">Email</label><input class="form-control" [(ngModel)]="formData['email']"></div>
+        <div class="mb-2"><label class="form-label">Account ID</label><input class="form-control" [(ngModel)]="formData['accountId']"></div>
+      </ng-container>
+      <ng-container *ngIf="activeTab === 'opportunities'">
+        <div class="mb-2"><label class="form-label">Title</label><input class="form-control" [(ngModel)]="formData['title']"></div>
+        <div class="mb-2"><label class="form-label">Value</label><input type="number" class="form-control" [(ngModel)]="formData['value']"></div>
+        <div class="mb-2"><label class="form-label">Stage</label>
+          <select class="form-select" [(ngModel)]="formData['stage']">
+            <option value="lead">Lead</option><option value="proposal">Proposal</option>
+            <option value="negotiation">Negotiation</option><option value="won">Won</option><option value="lost">Lost</option>
+          </select>
+        </div>
+        <div class="mb-2"><label class="form-label">Location</label><input class="form-control" [(ngModel)]="formData['location']"></div>
+      </ng-container>
+      <button class="btn btn-primary" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>

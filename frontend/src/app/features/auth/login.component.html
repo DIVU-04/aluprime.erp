@@ -1,0 +1,27 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="brand">
+      <h1>AluPrime ERP</h1>
+      <p>Cloud-based Fenestration ERP</p>
+    </div>
+
+    <form (ngSubmit)="submit()" #form="ngForm">
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" [(ngModel)]="email" name="email" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" [(ngModel)]="password" name="password" required />
+      </div>
+      <div class="alert alert-danger py-2" *ngIf="error">{{ error }}</div>
+      <button class="btn btn-primary w-100" type="submit" [disabled]="loading || !form.valid">
+        {{ loading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <div class="demo-credentials mt-3">
+      <small class="text-muted">Demo: admin&#64;aluprime.com / admin123</small>
+    </div>
+  </div>
+</div>

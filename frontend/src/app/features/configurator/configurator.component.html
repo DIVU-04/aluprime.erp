@@ -1,0 +1,99 @@
+<div class="page-header">
+  <h2>3D Design Configurator</h2>
+  <p class="text-muted">Configure windows and doors with instant costing</p>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">Design Parameters</div>
+      <div class="card-body">
+        <div class="mb-2"><label class="form-label">Design Name</label>
+          <input class="form-control" [(ngModel)]="design.name" (ngModelChange)="onDesignChange()"></div>
+        <div class="row">
+          <div class="col-6 mb-2"><label class="form-label">Product Type</label>
+            <select class="form-select" [(ngModel)]="design.productType" (ngModelChange)="onDesignChange()">
+              <option *ngFor="let t of catalog?.productTypes" [value]="t">{{ t }}</option>
+            </select></div>
+          <div class="col-6 mb-2"><label class="form-label">System</label>
+            <select class="form-select" [(ngModel)]="design.system" (ngModelChange)="onDesignChange()">
+              <option *ngFor="let s of catalog?.systems" [value]="s">{{ s }}</option>
+            </select></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-2"><label class="form-label">Width (mm)</label>
+            <input type="number" class="form-control" [(ngModel)]="design.width" (ngModelChange)="onDesignChange()"></div>
+          <div class="col-4 mb-2"><label class="form-label">Height (mm)</label>
+            <input type="number" class="form-control" [(ngModel)]="design.height" (ngModelChange)="onDesignChange()"></div>
+          <div class="col-4 mb-2"><label class="form-label">Panels</label>
+            <input type="number" class="form-control" [(ngModel)]="design.panels" (ngModelChange)="onDesignChange()"></div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-2"><label class="form-label">Opening Type</label>
+            <select class="form-select" [(ngModel)]="design.openingType" (ngModelChange)="onDesignChange()">
+              <option *ngFor="let o of catalog?.openingTypes" [value]="o">{{ o }}</option>
+            </select></div>
+          <div class="col-6 mb-2"><label class="form-label">Glass Type</label>
+            <select class="form-select" [(ngModel)]="design.glassType" (ngModelChange)="onDesignChange()">
+              <option *ngFor="let g of catalog?.glassTypes" [value]="g">{{ g }}</option>
+            </select></div>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-2"><label class="form-label">Color</label>
+            <select class="form-select" [(ngModel)]="design.color" (ngModelChange)="onDesignChange()">
+              <option *ngFor="let c of catalog?.colors" [value]="c">{{ c }}</option>
+            </select></div>
+          <div class="col-6 mb-2"><label class="form-label">Hardware</label>
+            <select class="form-select" [(ngModel)]="design.hardware" (ngModelChange)="onDesignChange()">
+              <option *ngFor="let h of catalog?.hardware" [value]="h">{{ h }}</option>
+            </select></div>
+        </div>
+        <button class="btn btn-primary" (click)="saveDesign()">
+          <i class="bi bi-save"></i> Save Design
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="design-preview">
+      <div class="window-frame" [style.width.px]="design.width / 3" [style.height.px]="design.height / 3">
+        <div class="window-panel" *ngFor="let p of panelArray(design.panels); let i = index"
+             [style.width.%]="100 / design.panels">
+          <span class="panel-label">{{ design.openingType }}</span>
+        </div>
+      </div>
+      <div class="preview-dims">{{ design.width }} x {{ design.height }} mm</div>
+    </div>
+  </div>
+
+  <div class="col-lg-3">
+    <div class="card" *ngIf="estimate">
+      <div class="card-header">Cost Estimate</div>
+      <div class="card-body">
+        <div class="cost-row"><span>Area</span><span>{{ estimate.area }} sqm</span></div>
+        <div class="cost-row"><span>Profile</span><span>{{ formatCurrency(estimate.profileCost) }}</span></div>
+        <div class="cost-row"><span>Glass</span><span>{{ formatCurrency(estimate.glassCost) }}</span></div>
+        <div class="cost-row"><span>Hardware</span><span>{{ formatCurrency(estimate.hardwareCost) }}</span></div>
+        <div class="cost-row"><span>Labor</span><span>{{ formatCurrency(estimate.laborCost) }}</span></div>
+        <hr>
+        <div class="cost-row total"><span>Total</span><span>{{ formatCurrency(estimate.totalCost) }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">Saved Designs</div>
+  <table class="table table-sm mb-0">
+    <thead><tr><th>Name</th><th>Type</th><th>Dimensions</th><th>Cost</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let d of designs">
+        <td>{{ d.name }}</td><td>{{ d.productType }} / {{ d.system }}</td>
+        <td>{{ d.width }} x {{ d.height }}</td>
+        <td>{{ formatCurrency(d.estimatedCost) }}</td>
+        <td><button class="btn btn-sm btn-outline-primary" (click)="loadDesign(d)">Load</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
