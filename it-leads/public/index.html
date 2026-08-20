@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>IT Maps Lead Generator | Google Maps Business Leads</title>
+  <meta name="description" content="Generate qualified business leads from Google Maps for your IT services company. Select locations, categories, and export full contact details." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__icon" aria-hidden="true">⚡</div>
+        <div>
+          <h1>IT Lead Gen</h1>
+          <p>Google Maps Lead Generator</p>
+        </div>
+      </div>
+
+      <form id="searchForm" class="search-form">
+        <section class="panel">
+          <h2>Location</h2>
+
+          <label class="field">
+            <span>Country</span>
+            <select id="countryCode" name="country_code"></select>
+          </label>
+
+          <label class="field">
+            <span>City / Area</span>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              list="presetLocations"
+              placeholder="e.g. Ahmedabad, Gujarat"
+              required
+            />
+            <datalist id="presetLocations"></datalist>
+          </label>
+
+          <label class="field">
+            <span>Search radius: <strong id="radiusLabel">10 km</strong></span>
+            <input id="radiusKm" name="radius_km" type="range" min="1" max="50" value="10" />
+          </label>
+        </section>
+
+        <section class="panel">
+          <h2>Business Type</h2>
+
+          <label class="field">
+            <span>Lead category</span>
+            <select id="categoryId" name="category_id"></select>
+            <small id="categoryHint" class="hint"></small>
+          </label>
+
+          <label class="field" id="customQueryField" hidden>
+            <span>Custom keyword</span>
+            <input
+              id="customQuery"
+              name="custom_query"
+              type="text"
+              placeholder="e.g. software company, CA firm, hospital"
+            />
+          </label>
+
+          <label class="field">
+            <span>Max results: <strong id="maxResultsLabel">20</strong></span>
+            <input id="maxResults" name="max_results" type="range" min="5" max="60" step="5" value="20" />
+          </label>
+        </section>
+
+        <button type="submit" class="btn btn--primary" id="searchBtn">
+          <span class="btn__text">Generate Leads</span>
+          <span class="btn__loader" hidden></span>
+        </button>
+      </form>
+
+      <div class="sidebar__footer">
+        <div id="apiStatus" class="status status--warn">Checking API…</div>
+        <p class="footnote">Uses Google Places API. Add your API key in <code>.env</code>.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="toolbar">
+        <div>
+          <h2 id="resultsTitle">Your Leads</h2>
+          <p id="resultsMeta">Select a location and category, then generate leads.</p>
+        </div>
+        <div class="toolbar__actions">
+          <button type="button" class="btn btn--ghost" id="exportCsvBtn" disabled>Export CSV</button>
+          <button type="button" class="btn btn--ghost" id="exportJsonBtn" disabled>Export JSON</button>
+          <button type="button" class="btn btn--ghost" id="copyBtn" disabled>Copy All</button>
+        </div>
+      </header>
+
+      <div id="alert" class="alert" hidden></div>
+
+      <section id="emptyState" class="empty-state">
+        <div class="empty-state__icon" aria-hidden="true">🗺️</div>
+        <h3>Find IT service prospects on Google Maps</h3>
+        <p>
+          Choose any city or area, pick a business category (offices, hospitals, schools,
+          retail, and more), and get full lead details — phone, website, address, ratings,
+          and Google Maps links.
+        </p>
+        <ul class="feature-list">
+          <li>20+ business categories for IT sales</li>
+          <li>Any location worldwide</li>
+          <li>Export to CSV or JSON</li>
+          <li>Phone, website, address, ratings &amp; hours</li>
+        </ul>
+      </section>
+
+      <section id="statsBar" class="stats-bar" hidden>
+        <div class="stat">
+          <span class="stat__label">Leads found</span>
+          <strong id="statTotal">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">With phone</span>
+          <strong id="statPhone">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">With website</span>
+          <strong id="statWebsite">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Query</span>
+          <strong id="statQuery">—</strong>
+        </div>
+      </section>
+
+      <div id="tableWrap" class="table-wrap" hidden>
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Business</th>
+              <th>Category</th>
+              <th>Phone</th>
+              <th>Website</th>
+              <th>Address</th>
+              <th>Rating</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="leadModal" class="modal">
+    <form method="dialog" class="modal__inner">
+      <header class="modal__header">
+        <div>
+          <h3 id="modalTitle">Lead Details</h3>
+          <p id="modalSubtitle"></p>
+        </div>
+        <button type="submit" class="icon-btn" aria-label="Close">✕</button>
+      </header>
+      <div id="modalBody" class="modal__body"></div>
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" id="modalMapsBtn">Open in Google Maps</button>
+        <button type="button" class="btn btn--ghost" id="modalCopyBtn">Copy Details</button>
+        <button type="submit" class="btn btn--primary">Close</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
