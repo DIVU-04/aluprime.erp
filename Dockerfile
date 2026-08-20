@@ -1,6 +1,6 @@
-# Lightweight static hosting for the KB Garage site using nginx.
-# Build:  docker build -t kb-garage .
-# Run:    docker run --rm -p 8080:80 kb-garage   (then open http://localhost:8080)
+# Lightweight static hosting for the MapLead Engine site using nginx.
+# Build:  docker build -t maplead-engine .
+# Run:    docker run --rm -p 8080:80 maplead-engine   (then open http://localhost:8080)
 FROM nginx:1.27-alpine
 
 # Serve the site from nginx's default web root.

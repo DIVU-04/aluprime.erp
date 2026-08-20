@@ -1,4 +1,4 @@
-# Netlify deployment config for the KB Garage static site.
+# Netlify deployment config for the MapLead Engine static site.
 # No build step is needed — the site is plain HTML/CSS/JS served from the repo root.
 [build]
   publish = "."

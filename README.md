@@ -1,48 +1,48 @@
-# KB Garage — Website
+# MapLead Engine — Google Maps Lead Generation Toolkit
 
-A modern, responsive marketing website for **KB Garage**, a car service & repair
-garage in Gota, Ahmedabad. The design is inspired by car-service platforms like
-GoMechanic, adapted to KB Garage's black & gold brand and services.
+A modern, responsive static website for **MapLead Engine**, built for **IT
+service companies** that want local-business leads from Google Maps.
 
-> **Quality Comes First**
+The project now includes:
+
+1. **`index.html`** — a branded landing page plus interactive lead brief builder
+2. **`lead-generator.html`** — a browser-based Google API tool that can fetch and
+   export leads directly to CSV
+
+> **Plan the outreach brief, then generate the lead file**
 
 ## Features
 
 - Sticky navbar with mobile hamburger menu
-- Hero section with a "free estimate" lead form
-- Services grid (service & repair, denting & painting, AC, washing, pick-up & drop, insurance)
-- Why-us, How-it-works and Pricing sections
-- Customer reviews
-- FAQ section with an accordion (one item open at a time)
-- Booking / contact section with business details
-- Booking forms that open **WhatsApp** with the customer's details pre-filled
-- Floating WhatsApp & Call buttons + a back-to-top button
-- Dedicated **Google Maps IT lead generator** page with CSV export (`lead-generator.html`)
-- SEO ready: meta description/keywords, Open Graph & Twitter cards, inline SVG favicon and `AutoRepair` JSON-LD structured data
+- Branded homepage focused on Google Maps lead generation for IT services
+- Interactive **lead brief builder** for:
+  - IT service selection
+  - business niche / lead type selection
+  - multi-location targeting
+  - lead field selection
+  - delivery format planning
+- Live preview that updates as the form changes
+- Copy-to-clipboard lead brief output
+- Dedicated **Google Maps IT lead generator** page with CSV export
+- Lead categories, workflow, package and FAQ sections
+- Official Google API workflow on the generator page
+- SEO-ready metadata, Open Graph tags and `SoftwareApplication` JSON-LD
 - Fully responsive (desktop, tablet, mobile)
 - No build step — pure HTML, CSS and vanilla JS
 
-## Business details
-
-- **Owner:** Krunal Patel
-- **Phone / WhatsApp:** +91 70 96 77 78 96
-- **Address:** Near Seventh Parisar, Opp. Vishnudhara Garden, B/h. Jaguar Showroom,
-  R.C.C. Road, S.G. Highway, Gota, Ahmedabad – 382481
-- **Hours:** 24×7, insurance assistance available
-
 ## Project structure
 
-```
+```text
 .
 ├── index.html
 ├── lead-generator.html
 ├── robots.txt
 ├── sitemap.xml
-├── .htaccess               # Hostinger / Apache / LiteSpeed config
+├── .htaccess               # Apache / LiteSpeed config
 ├── netlify.toml            # Netlify config
 ├── vercel.json             # Vercel config
 ├── Dockerfile              # self-hosting via nginx
-├── scripts/build-zip.sh    # build dist/kb-garage-site.zip for upload
+├── scripts/build-zip.sh    # build dist/maplead-engine-site.zip for upload
 ├── .github/workflows/
 │   └── deploy.yml          # GitHub Pages CI/CD
 └── assets
@@ -53,37 +53,54 @@ GoMechanic, adapted to KB Garage's black & gold brand and services.
     └── img/                # logo + favicon (SVG)
 ```
 
-## Google Maps lead generator (IT services)
+## Pages
+
+### 1) Homepage and lead brief builder
+
+Open `index.html` to:
+
+- explain the offer for IT service companies
+- choose target niches and cities
+- select which lead fields are required
+- preview the expected output
+- copy a structured lead-generation brief for your sales or delivery team
+
+### 2) Google Maps lead generator
 
 Open `lead-generator.html` to generate business leads by lead type and location.
 
-### What it does
+#### What it does
 
-- Accepts multiple lead types (one per line), e.g. `Software company`, `Managed IT services`
+- Accepts multiple lead types (one per line), e.g. `Software company`,
+  `Managed IT services`
 - Accepts multiple locations (one per line), e.g. `Ahmedabad, India`
 - Uses Google APIs to fetch detailed business data:
-  - business name, type, address
-  - phone number, website
-  - rating, review count, open/closed status
+  - business name and primary type
+  - address
+  - phone number and website
+  - rating and review count
+  - business status / open-now state
   - Google Maps URL and coordinates
 - Exports selected fields to CSV
 
-### API setup required
+#### API setup required
 
 In Google Cloud Console for your project:
 
 1. Enable **Places API**.
 2. Enable **Geocoding API**.
-3. Create an API key and restrict it (HTTP referrer restrictions + API restrictions).
+3. Create an API key and restrict it (HTTP referrer restrictions + API
+   restrictions).
 4. Paste the key into the tool and click **Generate Leads**.
 
 > Notes:
-> - This implementation uses official Google APIs (not scraping).
-> - Google usage/billing and legal compliance for outreach are your responsibility.
+> - This implementation uses official Google APIs, not scraping.
+> - Google pricing, usage limits and outreach compliance are your responsibility.
 
 ## Run locally
 
-It's a static site — just open `index.html` in a browser, or serve it:
+It's a static site — just open `index.html` or `lead-generator.html` in a
+browser, or serve the repo:
 
 ```bash
 python3 -m http.server 8000
@@ -92,9 +109,9 @@ python3 -m http.server 8000
 
 ## Deployment
 
-The site is fully static, so it can be hosted anywhere. Pick one:
+The site is fully static, so it can be hosted anywhere.
 
-### 1. GitHub Pages (recommended, free)
+### 1. GitHub Pages
 
 A workflow is included at `.github/workflows/deploy.yml`. To enable it:
 
@@ -102,8 +119,7 @@ A workflow is included at `.github/workflows/deploy.yml`. To enable it:
 2. In the repo, go to **Settings → Pages → Build and deployment** and set
    **Source = GitHub Actions**.
 3. Every push to `main` then publishes automatically. The live URL will be
-   `https://<your-user>.github.io/<repo>/` (you can also run it manually from the
-   **Actions** tab via "Run workflow").
+   `https://<your-user>.github.io/<repo>/`.
 
 ### 2. Netlify
 
@@ -119,60 +135,31 @@ A workflow is included at `.github/workflows/deploy.yml`. To enable it:
 ### 4. Docker / any VPS (nginx)
 
 ```bash
-docker build -t kb-garage .
-docker run --rm -p 8080:80 kb-garage
+docker build -t maplead-engine .
+docker run --rm -p 8080:80 maplead-engine
 # open http://localhost:8080
 ```
 
-### 5. Hostinger (shared hosting)
+### 5. Hostinger / shared hosting
 
-Hostinger runs LiteSpeed (Apache-compatible), so the included `.htaccess` handles
-HTTPS, caching, compression and security headers. Choose one method:
+Hostinger runs LiteSpeed (Apache-compatible), so the included `.htaccess`
+handles caching, compression and security headers.
 
-**A) hPanel File Manager (easiest)**
+Build the upload bundle:
 
-1. Build the upload bundle: `bash scripts/build-zip.sh` → creates
-   `dist/kb-garage-site.zip`.
-2. In hPanel go to **Files → File Manager** and open **`public_html`**.
-   Delete the default `default.php`/`index.html` if present.
-3. Click **Upload** and upload `kb-garage-site.zip`.
-4. Right-click the uploaded ZIP → **Extract** (into `public_html`).
-   You should end up with `index.html`, `assets/`, `robots.txt`, `sitemap.xml`
-   and `.htaccess` directly inside `public_html`.
-5. Visit your domain. (Enable **File Manager → Settings → Show hidden files** to
-   see `.htaccess`.)
+```bash
+bash scripts/build-zip.sh
+```
 
-**B) FTP (FileZilla)**
+This creates `dist/maplead-engine-site.zip`.
 
-1. In hPanel: **Files → FTP Accounts** to get host, username and password.
-2. Connect with FileZilla and open `public_html`.
-3. Upload `index.html`, `robots.txt`, `sitemap.xml`, `.htaccess` and the whole
-   `assets/` folder.
+## Customizing
 
-**C) Git deployment (Hostinger Business plans)**
-
-1. hPanel → **Advanced → GIT**.
-2. Repository: `https://github.com/DIVU-04/kbgarage.git`, Branch: `main`,
-   Install path: `public_html` (leave blank for repo root).
-3. Click **Create**, then **Deploy**. (For a private repo, add Hostinger's SSH
-   key to the GitHub repo's Deploy Keys first.)
-
-After deploying, enable free SSL in hPanel (**Security → SSL**), then uncomment the
-"Force HTTPS" block in `.htaccess`.
-
-### 6. Plain static host
-
-Upload `index.html`, `robots.txt`, `sitemap.xml` and the `assets/` folder to any
-web host (cPanel, S3 + CloudFront, Firebase Hosting, etc.). No build step needed.
-
-> The site is configured for the domain **https://kbgarage.in/** (canonical /
-> Open-Graph URLs in `index.html`, plus `robots.txt` and `sitemap.xml`). If the
-> domain ever changes, update those URLs accordingly.
-
-## Customising
-
-- **Contact number:** update `WHATSAPP` in `assets/js/script.js` and the `tel:` /
-  `wa.me` links in `index.html`.
-- **Prices & services:** edit the relevant sections in `index.html`.
-- **Colors:** tweak the CSS custom properties (`--gold`, `--bg`, …) at the top of
-  `assets/css/styles.css`.
+- **Homepage messaging:** edit `index.html`
+- **Lead brief behavior:** edit `assets/js/script.js`
+- **Live lead generator UI:** edit `lead-generator.html`
+- **Google API behavior and CSV export:** edit `assets/js/lead-generator.js`
+- **Styling:** edit `assets/css/styles.css` and `assets/css/lead-generator.css`
+- **Branding:** update the SVG assets under `assets/img/`
+- **Domain-specific SEO:** update `robots.txt`, `sitemap.xml` and any final
+  canonical / Open Graph URLs after deployment
