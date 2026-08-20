@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Maps Lead Generator — IT Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --bg2: #161b27;
+      --bg3: #1e2535;
+      --border: #2a3349;
+      --accent: #3b82f6;
+      --accent2: #6366f1;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,.45);
+    }
+
+    html { font-family: 'Inter', sans-serif; font-size: 14px; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ---- Layout ---- */
+    .app { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex; align-items: center; gap: 16px;
+      height: 62px;
+    }
+    .header-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 1.15rem; color: var(--text);
+    }
+    .header-logo svg { flex-shrink: 0; }
+    .header-badge {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: .7rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px; letter-spacing: .04em;
+      margin-left: 6px;
+    }
+    .header-meta { margin-left: auto; color: var(--text3); font-size: .8rem; }
+
+    /* ---- Main ---- */
+    .main { display: grid; grid-template-columns: 360px 1fr; height: calc(100vh - 62px); overflow: hidden; }
+
+    /* ---- Sidebar ---- */
+    .sidebar {
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-section { padding: 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-section:last-child { border-bottom: none; }
+    .sidebar-title {
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      color: var(--text3); text-transform: uppercase; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group:last-child { margin-bottom: 0; }
+    label { display: block; font-size: .78rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+
+    input, select, textarea {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 9px 12px;
+      font-family: inherit; font-size: .85rem; outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--text3); }
+    select option { background: var(--bg3); }
+
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* API Key toggle */
+    .api-key-wrap { position: relative; }
+    .api-key-wrap input { padding-right: 40px; font-family: monospace; font-size: .78rem; }
+    .api-key-toggle {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text3);
+      display: flex; align-items: center;
+    }
+    .api-key-toggle:hover { color: var(--text); }
+
+    /* Tags for selected categories */
+    .category-tags {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+    }
+    .category-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.35);
+      color: #93c5fd; border-radius: 6px; padding: 3px 9px; font-size: .75rem; font-weight: 500;
+    }
+    .category-tag-remove {
+      cursor: pointer; color: #93c5fd; opacity: .7; font-size: 1rem; line-height: 1;
+      background: none; border: none;
+    }
+    .category-tag-remove:hover { opacity: 1; color: var(--red); }
+
+    /* Progress */
+    .progress-wrap { margin-top: 12px; }
+    .progress-bar-bg {
+      background: var(--bg3); border-radius: 6px; height: 6px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 6px; transition: width .4s; }
+    .progress-label { font-size: .72rem; color: var(--text3); margin-top: 5px; text-align: center; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: none; border-radius: 8px; cursor: pointer; font-family: inherit;
+      font-weight: 600; transition: all .2s; white-space: nowrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; padding: 11px 20px; font-size: .9rem; width: 100%;
+    }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,.4); }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary {
+      background: var(--bg3); color: var(--text2); border: 1px solid var(--border);
+      padding: 8px 16px; font-size: .82rem;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--text); }
+    .btn-danger {
+      background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3);
+      padding: 8px 16px; font-size: .82rem;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,.25); }
+    .btn-green {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: #fff; padding: 8px 18px; font-size: .82rem;
+    }
+    .btn-green:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-green:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* Alert */
+    .alert {
+      border-radius: 8px; padding: 10px 14px; font-size: .8rem;
+      display: flex; align-items: flex-start; gap: 8px; margin-top: 8px;
+    }
+    .alert-info { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25); color: #93c5fd; }
+    .alert-warn { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.25); color: #fcd34d; }
+    .alert-error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); color: #fca5a5; }
+    .alert-success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); color: #86efac; }
+
+    /* ---- Content area ---- */
+    .content { display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ---- Stats bar ---- */
+    .stats-bar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 12px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.3rem; font-weight: 800; color: var(--text); }
+    .stat-label { font-size: .65rem; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+    .stats-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+
+    /* Search/filter bar */
+    .filter-bar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 10px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .filter-input {
+      flex: 1; min-width: 200px; max-width: 300px;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 7px 12px;
+      font-family: inherit; font-size: .82rem; outline: none;
+    }
+    .filter-input:focus { border-color: var(--accent); }
+    .filter-select {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 7px 12px;
+      font-family: inherit; font-size: .82rem; outline: none;
+    }
+    .filter-select:focus { border-color: var(--accent); }
+    .filter-label { color: var(--text3); font-size: .78rem; font-weight: 500; }
+    .view-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .view-btn {
+      background: var(--bg3); border: none; color: var(--text3); cursor: pointer;
+      padding: 6px 12px; font-size: .8rem; display: flex; align-items: center; gap: 5px;
+      transition: all .2s;
+    }
+    .view-btn.active { background: var(--accent); color: #fff; }
+
+    /* ---- Table ---- */
+    .table-wrap { flex: 1; overflow: auto; }
+    .leads-table { width: 100%; border-collapse: collapse; }
+    .leads-table thead { position: sticky; top: 0; z-index: 10; }
+    .leads-table th {
+      background: var(--bg2); border-bottom: 2px solid var(--border);
+      padding: 10px 14px; text-align: left; font-size: .7rem; font-weight: 700;
+      letter-spacing: .06em; color: var(--text3); text-transform: uppercase;
+      white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    .leads-table th:hover { color: var(--text); }
+    .leads-table th .sort-icon { margin-left: 4px; opacity: .5; }
+    .leads-table th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    .leads-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      font-size: .82rem; vertical-align: middle;
+    }
+    .leads-table tr { transition: background .15s; }
+    .leads-table tr:hover td { background: rgba(255,255,255,.025); }
+    .leads-table tr.selected td { background: rgba(59,130,246,.07); }
+
+    .td-name { font-weight: 600; color: var(--text); max-width: 200px; }
+    .td-name small { display: block; color: var(--text3); font-weight: 400; font-size: .72rem; margin-top: 2px; }
+    .td-address { max-width: 220px; color: var(--text2); }
+    .td-phone a, .td-website a {
+      color: var(--accent); text-decoration: none;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .td-phone a:hover, .td-website a:hover { text-decoration: underline; }
+    .td-rating { white-space: nowrap; }
+    .stars { color: var(--yellow); letter-spacing: -.05em; }
+    .badge {
+      display: inline-flex; align-items: center; border-radius: 5px;
+      font-size: .68rem; font-weight: 600; padding: 2px 8px; gap: 4px;
+    }
+    .badge-green { background: rgba(34,197,94,.15); color: #86efac; }
+    .badge-red { background: rgba(239,68,68,.15); color: #fca5a5; }
+    .badge-gray { background: rgba(100,116,139,.15); color: var(--text3); }
+    .badge-blue { background: rgba(59,130,246,.15); color: #93c5fd; }
+
+    .action-cell { display: flex; gap: 6px; }
+    .icon-btn {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text3); border-radius: 6px; padding: 4px 8px; cursor: pointer;
+      font-size: .75rem; display: flex; align-items: center; gap: 4px;
+      text-decoration: none; transition: all .2s;
+    }
+    .icon-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ---- Card grid ---- */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px; padding: 20px; overflow-y: auto; flex: 1;
+    }
+    .lead-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+      transition: border-color .2s, transform .2s;
+      position: relative; overflow: hidden;
+    }
+    .lead-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .lead-card-number {
+      position: absolute; top: 14px; right: 14px;
+      font-size: .65rem; font-weight: 700; color: var(--text3);
+    }
+    .lead-card-name { font-weight: 700; font-size: .95rem; margin-bottom: 4px; padding-right: 36px; }
+    .lead-card-type { color: var(--text3); font-size: .72rem; margin-bottom: 12px; }
+    .lead-card-detail {
+      display: flex; align-items: flex-start; gap: 8px; font-size: .78rem;
+      color: var(--text2); margin-bottom: 6px;
+    }
+    .lead-card-detail svg { flex-shrink: 0; margin-top: 1px; color: var(--text3); }
+    .lead-card-detail a { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .lead-card-detail a:hover { text-decoration: underline; }
+    .lead-card-footer {
+      margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .lead-card-rating { display: flex; align-items: center; gap: 6px; }
+    .rating-pill {
+      background: rgba(245,158,11,.15); color: #fcd34d; border-radius: 6px;
+      padding: 2px 8px; font-size: .75rem; font-weight: 700;
+    }
+    .reviews-count { font-size: .72rem; color: var(--text3); }
+
+    /* ---- Empty state ---- */
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 60px 20px; text-align: center;
+    }
+    .empty-icon { font-size: 4rem; margin-bottom: 16px; }
+    .empty-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+    .empty-desc { color: var(--text3); font-size: .85rem; max-width: 360px; line-height: 1.6; }
+
+    /* ---- Loading ---- */
+    .loading-overlay {
+      position: absolute; inset: 0;
+      background: rgba(15,17,23,.85); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px; z-index: 50;
+    }
+    .spinner {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: var(--text2); font-size: .9rem; font-weight: 500; }
+
+    /* ---- Checkbox ---- */
+    .check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .check-row input[type=checkbox] {
+      width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0;
+    }
+    .check-row label { margin: 0; font-size: .82rem; cursor: pointer; }
+
+    /* ---- Tooltip ---- */
+    [data-tip] { position: relative; cursor: help; }
+    [data-tip]::after {
+      content: attr(data-tip);
+      position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+      background: #1e293b; color: var(--text); font-size: .72rem; font-weight: 400;
+      padding: 6px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .2s; z-index: 100; border: 1px solid var(--border);
+    }
+    [data-tip]:hover::after { opacity: 1; }
+
+    /* ---- Hidden map (required for Places API) ---- */
+    #map { display: none; }
+
+    /* ---- Scrollbar ---- */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
+      .sidebar { max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+      .content { min-height: 600px; }
+    }
+
+    .select2-multi {
+      min-height: 90px; resize: vertical;
+    }
+
+    .location-list {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px; max-height: 200px; overflow-y: auto;
+    }
+    .loc-chip {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .75rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;
+      border: 1px solid var(--border); background: var(--bg3); color: var(--text2);
+      transition: all .15s; user-select: none;
+    }
+    .loc-chip:hover { border-color: var(--accent); color: var(--text); }
+    .loc-chip.active { background: rgba(59,130,246,.15); border-color: rgba(59,130,246,.5); color: #93c5fd; }
+    .loc-chip input { display: none; }
+
+    /* number badge */
+    .num-badge {
+      background: rgba(59,130,246,.2); color: #93c5fd;
+      border-radius: 99px; font-size: .65rem; font-weight: 700;
+      padding: 1px 7px; min-width: 22px; text-align: center;
+    }
+
+    .td-checkbox { width: 36px; }
+    .td-num { color: var(--text3); font-size: .75rem; width: 36px; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-logo">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <rect width="34" height="34" rx="9" fill="url(#hg)" />
+        <defs>
+          <linearGradient id="hg" x1="0" y1="0" x2="34" y2="34">
+            <stop offset="0%" stop-color="#3b82f6"/>
+            <stop offset="100%" stop-color="#6366f1"/>
+          </linearGradient>
+        </defs>
+        <path d="M8 17.5C8 12.25 12.25 8 17.5 8C19.5 8 21.35 8.6 22.9 9.65" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <path d="M26.5 14C26.85 15.1 27 16.3 27 17.5C27 22.75 22.75 27 17.5 27C12.25 27 8 22.75 8 17.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="17.5" cy="17.5" r="3" fill="white"/>
+        <path d="M17.5 14.5V11M17.5 24V20.5M14.5 17.5H11M24 17.5H20.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Google Maps Lead Generator
+      <span class="header-badge">IT Pro</span>
+    </div>
+    <div class="header-meta">Built for IT Service Companies &mdash; Powered by Google Places API</div>
+  </header>
+
+  <!-- Main layout -->
+  <div class="main">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+
+      <!-- API Key -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          Google API Key
+        </div>
+        <div class="form-group">
+          <label for="apiKey">Maps JavaScript API Key <span style="color:var(--red)">*</span></label>
+          <div class="api-key-wrap">
+            <input type="password" id="apiKey" placeholder="AIza..." autocomplete="off" />
+            <button class="api-key-toggle" onclick="toggleApiKeyVisibility()" title="Show/hide key">
+              <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="alert alert-info" style="margin-top:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Enable <strong>Maps JavaScript API</strong> + <strong>Places API</strong> in Google Cloud Console. Key is saved locally only.
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="width:100%;margin-top:4px" onclick="loadMapsApi()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Connect API
+        </button>
+        <div id="apiStatus" style="margin-top:8px"></div>
+      </div>
+
+      <!-- Business Type -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Business Types
+          <span class="num-badge" id="catCount">0</span>
+        </div>
+        <div class="form-group">
+          <label for="categoryInput">Search &amp; add categories</label>
+          <input type="text" id="categoryInput" placeholder="e.g. restaurant, hospital..." list="categoryList" />
+          <datalist id="categoryList"></datalist>
+          <div class="category-tags" id="categoryTags"></div>
+        </div>
+        <div class="form-group">
+          <label>Quick add &mdash; common targets for IT companies</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px" id="quickCats"></div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Locations
+          <span class="num-badge" id="locCount">0</span>
+        </div>
+        <div class="form-group">
+          <label for="customLocation">Custom location</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="customLocation" placeholder="City, State, Country..." style="flex:1" />
+            <button class="btn btn-secondary" style="white-space:nowrap" onclick="addCustomLocation()">Add</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Select cities</label>
+          <div class="location-list" id="locationChips"></div>
+        </div>
+        <div id="selectedLocations" class="category-tags" style="margin-top:8px"></div>
+      </div>
+
+      <!-- Search settings -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Search Settings
+        </div>
+        <div class="input-row">
+          <div class="form-group">
+            <label for="radius">Radius</label>
+            <select id="radius">
+              <option value="1000">1 km</option>
+              <option value="2000">2 km</option>
+              <option value="5000" selected>5 km</option>
+              <option value="10000">10 km</option>
+              <option value="25000">25 km</option>
+              <option value="50000">50 km</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="minRating">Min Rating</label>
+            <select id="minRating">
+              <option value="0">Any</option>
+              <option value="3">3+ ⭐</option>
+              <option value="3.5">3.5+ ⭐</option>
+              <option value="4">4+ ⭐</option>
+              <option value="4.5">4.5+ ⭐</option>
+            </select>
+          </div>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="filterPhone" checked />
+          <label for="filterPhone">Only leads with phone number</label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="filterWebsite" />
+          <label for="filterWebsite">Only leads with website</label>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="filterOpen" />
+          <label for="filterOpen">Currently open businesses only</label>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <div class="sidebar-section">
+        <div id="progressWrap" class="progress-wrap" style="display:none">
+          <div class="progress-bar-bg"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+          <div class="progress-label" id="progressLabel">Initializing...</div>
+        </div>
+        <button class="btn btn-primary" id="generateBtn" onclick="startGeneration()" style="margin-top:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Generate Leads
+        </button>
+        <button class="btn btn-danger" id="stopBtn" onclick="stopGeneration()" style="display:none;margin-top:8px;width:100%">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          Stop
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ========== CONTENT ========== -->
+    <div class="content" style="position:relative">
+
+      <!-- Stats bar -->
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">Total Leads</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" style="color:var(--green)" id="statWithPhone">0</div>
+          <div class="stat-label">With Phone</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" style="color:var(--accent)" id="statWithSite">0</div>
+          <div class="stat-label">With Website</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" style="color:var(--yellow)" id="statAvgRating">—</div>
+          <div class="stat-label">Avg Rating</div>
+        </div>
+        <div class="stats-actions">
+          <div class="view-toggle">
+            <button class="view-btn active" id="btnTable" onclick="setView('table')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              Table
+            </button>
+            <button class="view-btn" id="btnCard" onclick="setView('card')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Cards
+            </button>
+          </div>
+          <button class="btn btn-secondary" onclick="clearLeads()" id="clearBtn" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            Clear
+          </button>
+          <button class="btn btn-green" onclick="exportCSV()" id="exportBtn" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <input type="text" class="filter-input" id="searchFilter" placeholder="🔍  Filter leads by name, address..." oninput="applyFilters()" />
+        <span class="filter-label">Sort:</span>
+        <select class="filter-select" id="sortBy" onchange="applyFilters()">
+          <option value="">Default</option>
+          <option value="name">Name A–Z</option>
+          <option value="rating-desc">Rating ↓</option>
+          <option value="rating-asc">Rating ↑</option>
+          <option value="reviews-desc">Most Reviews</option>
+        </select>
+        <span class="filter-label">Category:</span>
+        <select class="filter-select" id="filterCat" onchange="applyFilters()">
+          <option value="">All</option>
+        </select>
+        <span class="filter-label" id="shownCount" style="margin-left:auto;color:var(--text3)">0 shown</span>
+      </div>
+
+      <!-- Table view -->
+      <div class="table-wrap" id="tableView">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🗺️</div>
+          <div class="empty-title">No leads yet</div>
+          <div class="empty-desc">Configure your search settings in the panel on the left, then click <strong>Generate Leads</strong> to start pulling business data from Google Maps.</div>
+        </div>
+        <table class="leads-table" id="leadsTable" style="display:none">
+          <thead>
+            <tr>
+              <th class="td-checkbox"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" style="width:14px;height:14px;accent-color:var(--accent)" /></th>
+              <th class="td-num">#</th>
+              <th onclick="sortByCol('name')">Business Name <span class="sort-icon">↕</span></th>
+              <th>Category</th>
+              <th>Address</th>
+              <th>Phone</th>
+              <th>Website</th>
+              <th onclick="sortByCol('rating')">Rating <span class="sort-icon">↕</span></th>
+              <th onclick="sortByCol('reviews')">Reviews <span class="sort-icon">↕</span></th>
+              <th>Hours</th>
+              <th>Location</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Card view -->
+      <div class="cards-grid" id="cardView" style="display:none"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Hidden map div required by Places API -->
+<div id="map"></div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+const ALL_CATEGORIES = [
+  // IT/Tech targets
+  "software company","it company","technology company","startup","coworking space",
+  "data center","internet service provider","mobile app developer","web design agency",
+  "digital marketing agency","ecommerce company","business center",
+  // Industries that need IT services
+  "restaurant","cafe","bakery","bar","hotel","resort","guest house","hostel",
+  "hospital","clinic","pharmacy","doctor","dentist","diagnostic center","nursing home",
+  "school","college","university","coaching center","tuition center",
+  "bank","atm","insurance agency","financial advisor","ca office","chartered accountant",
+  "law firm","lawyer","advocate","legal services",
+  "real estate agency","builder","property dealer","architect","interior designer",
+  "manufacturing company","factory","industry","warehouse","logistics company",
+  "retail store","supermarket","shopping mall","clothing store","jewellery shop",
+  "automobile dealer","car showroom","car service","spare parts",
+  "gym","fitness center","yoga studio","spa","salon","beauty parlor",
+  "travel agency","tour operator","taxi service","transport company",
+  "event management","wedding planner","photography studio","advertising agency",
+  "printing press","newspaper","media company","radio station",
+  "ngo","trust","charity","political party","government office",
+  "construction company","contractor","civil engineer","plumber","electrician"
+];
+
+const QUICK_CATS = [
+  "software company","hospital","school","hotel","restaurant","real estate agency",
+  "manufacturing company","clinic","bank","law firm","gym","travel agency"
+];
+
+const INDIA_CITIES = [
+  "Mumbai, Maharashtra","Delhi, Delhi","Bengaluru, Karnataka","Hyderabad, Telangana",
+  "Ahmedabad, Gujarat","Chennai, Tamil Nadu","Kolkata, West Bengal","Pune, Maharashtra",
+  "Jaipur, Rajasthan","Surat, Gujarat","Lucknow, Uttar Pradesh","Kanpur, Uttar Pradesh",
+  "Nagpur, Maharashtra","Indore, Madhya Pradesh","Bhopal, Madhya Pradesh",
+  "Visakhapatnam, Andhra Pradesh","Patna, Bihar","Vadodara, Gujarat","Ghaziabad, Uttar Pradesh",
+  "Ludhiana, Punjab","Agra, Uttar Pradesh","Nashik, Maharashtra","Faridabad, Haryana",
+  "Meerut, Uttar Pradesh","Rajkot, Gujarat","Varanasi, Uttar Pradesh","Srinagar, Jammu and Kashmir",
+  "Aurangabad, Maharashtra","Dhanbad, Jharkhand","Amritsar, Punjab","Navi Mumbai, Maharashtra",
+  "Allahabad, Uttar Pradesh","Ranchi, Jharkhand","Howrah, West Bengal","Coimbatore, Tamil Nadu",
+  "Jabalpur, Madhya Pradesh","Gwalior, Madhya Pradesh","Vijayawada, Andhra Pradesh",
+  "Jodhpur, Rajasthan","Madurai, Tamil Nadu","Raipur, Chhattisgarh","Kota, Rajasthan",
+  "Guwahati, Assam","Chandigarh, Chandigarh","Solapur, Maharashtra","Hubli, Karnataka",
+  "Thiruvananthapuram, Kerala","Mysuru, Karnataka","Tiruchirappalli, Tamil Nadu",
+  "Noida, Uttar Pradesh","Gurugram, Haryana","Thane, Maharashtra"
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let placesService = null;
+let selectedCategories = [];
+let selectedLocations = [];
+let allLeads = [];
+let filteredLeads = [];
+let currentView = 'table';
+let sortCol = null;
+let sortDir = 1;
+let stopRequested = false;
+let mapsLoaded = false;
+let searchQueue = [];
+
+// ============================================================
+//  INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Restore saved API key
+  const savedKey = localStorage.getItem('gmaps_api_key');
+  if (savedKey) document.getElementById('apiKey').value = savedKey;
+
+  // Build category datalist
+  const dl = document.getElementById('categoryList');
+  ALL_CATEGORIES.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    dl.appendChild(opt);
+  });
+
+  // Quick category pills
+  const qc = document.getElementById('quickCats');
+  QUICK_CATS.forEach(c => {
+    const pill = document.createElement('button');
+    pill.className = 'btn btn-secondary';
+    pill.style.cssText = 'padding:4px 10px;font-size:.72rem;border-radius:6px';
+    pill.textContent = c;
+    pill.onclick = () => addCategory(c);
+    qc.appendChild(pill);
+  });
+
+  // Build location chips
+  const lc = document.getElementById('locationChips');
+  INDIA_CITIES.forEach(city => {
+    const chip = document.createElement('label');
+    chip.className = 'loc-chip';
+    chip.innerHTML = `<input type="checkbox" value="${city}" onchange="toggleLocation(this)" /> ${city.split(',')[0]}`;
+    lc.appendChild(chip);
+  });
+
+  // Category enter key
+  document.getElementById('categoryInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const val = e.target.value.trim();
+      if (val) { addCategory(val); e.target.value = ''; }
+    }
+  });
+  document.getElementById('categoryInput').addEventListener('change', e => {
+    const val = e.target.value.trim();
+    if (val && ALL_CATEGORIES.includes(val.toLowerCase())) {
+      addCategory(val); e.target.value = '';
+    }
+  });
+});
+
+// ============================================================
+//  API KEY
+// ============================================================
+function toggleApiKeyVisibility() {
+  const inp = document.getElementById('apiKey');
+  const icon = document.getElementById('eyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    inp.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+function loadMapsApi() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { showApiStatus('error', 'Please enter your Google Maps API key first.'); return; }
+  localStorage.setItem('gmaps_api_key', key);
+  showApiStatus('info', 'Loading Google Maps API...');
+
+  // Remove existing script if any
+  const existing = document.getElementById('gmapsScript');
+  if (existing) existing.remove();
+
+  window.initGoogleMaps = function() {
+    try {
+      const mapEl = document.getElementById('map');
+      const map = new google.maps.Map(mapEl, { center: { lat: 20.59, lng: 78.96 }, zoom: 5 });
+      placesService = new google.maps.places.PlacesService(map);
+      mapsLoaded = true;
+      showApiStatus('success', '✓ Connected! Google Maps & Places API ready.');
+    } catch(e) {
+      showApiStatus('error', 'Failed to initialize Places API: ' + e.message);
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = 'gmapsScript';
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=initGoogleMaps`;
+  script.onerror = () => showApiStatus('error', 'Failed to load Maps API. Check your API key and ensure Maps JavaScript API + Places API are enabled in Google Cloud Console.');
+  document.head.appendChild(script);
+}
+
+function showApiStatus(type, msg) {
+  const el = document.getElementById('apiStatus');
+  const icons = {
+    success: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+    error: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    info: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+  };
+  el.innerHTML = `<div class="alert alert-${type}" style="margin-top:0">${icons[type]||''} ${msg}</div>`;
+}
+
+// ============================================================
+//  CATEGORIES
+// ============================================================
+function addCategory(val) {
+  val = val.toLowerCase().trim();
+  if (!val || selectedCategories.includes(val)) return;
+  selectedCategories.push(val);
+  renderCategoryTags();
+  document.getElementById('categoryInput').value = '';
+}
+
+function removeCategory(val) {
+  selectedCategories = selectedCategories.filter(c => c !== val);
+  renderCategoryTags();
+}
+
+function renderCategoryTags() {
+  const wrap = document.getElementById('categoryTags');
+  wrap.innerHTML = selectedCategories.map(c =>
+    `<span class="category-tag">${c}<button class="category-tag-remove" onclick="removeCategory('${c.replace(/'/g,"\\'")}')">×</button></span>`
+  ).join('');
+  document.getElementById('catCount').textContent = selectedCategories.length;
+}
+
+// ============================================================
+//  LOCATIONS
+// ============================================================
+function toggleLocation(checkbox) {
+  const val = checkbox.value;
+  const chip = checkbox.closest('.loc-chip');
+  if (checkbox.checked) {
+    if (!selectedLocations.includes(val)) selectedLocations.push(val);
+    chip.classList.add('active');
+  } else {
+    selectedLocations = selectedLocations.filter(l => l !== val);
+    chip.classList.remove('active');
+  }
+  renderLocationTags();
+}
+
+function addCustomLocation() {
+  const inp = document.getElementById('customLocation');
+  const val = inp.value.trim();
+  if (!val || selectedLocations.includes(val)) return;
+  selectedLocations.push(val);
+  inp.value = '';
+  renderLocationTags();
+}
+
+function removeLocation(val) {
+  selectedLocations = selectedLocations.filter(l => l !== val);
+  // uncheck chip if present
+  document.querySelectorAll('#locationChips input[type=checkbox]').forEach(cb => {
+    if (cb.value === val) { cb.checked = false; cb.closest('.loc-chip').classList.remove('active'); }
+  });
+  renderLocationTags();
+}
+
+function renderLocationTags() {
+  const wrap = document.getElementById('selectedLocations');
+  wrap.innerHTML = selectedLocations.map(l =>
+    `<span class="category-tag" style="background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.35);color:#a5b4fc">${l}<button class="category-tag-remove" onclick="removeLocation('${l.replace(/'/g,"\\'")}')">×</button></span>`
+  ).join('');
+  document.getElementById('locCount').textContent = selectedLocations.length;
+}
+
+// ============================================================
+//  GENERATION
+// ============================================================
+async function startGeneration() {
+  if (!mapsLoaded) { alert('Please connect your Google Maps API key first!'); return; }
+  if (selectedCategories.length === 0) { alert('Please select at least one business category.'); return; }
+  if (selectedLocations.length === 0) { alert('Please select at least one location.'); return; }
+
+  stopRequested = false;
+  allLeads = [];
+  filteredLeads = [];
+  updateStats();
+  renderLeads();
+
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('stopBtn').style.display = 'block';
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('clearBtn').disabled = true;
+  document.getElementById('exportBtn').disabled = true;
+
+  const radius = parseInt(document.getElementById('radius').value);
+  const minRating = parseFloat(document.getElementById('minRating').value);
+  const filterPhone = document.getElementById('filterPhone').checked;
+  const filterWebsite = document.getElementById('filterWebsite').checked;
+  const filterOpen = document.getElementById('filterOpen').checked;
+
+  const totalJobs = selectedCategories.length * selectedLocations.length;
+  let done = 0;
+
+  for (const location of selectedLocations) {
+    if (stopRequested) break;
+    for (const category of selectedCategories) {
+      if (stopRequested) break;
+      setProgress(done, totalJobs, `Searching "${category}" in ${location}...`);
+      try {
+        const results = await searchPlaces(category, location, radius);
+        for (const place of results) {
+          if (stopRequested) break;
+          const details = await getPlaceDetails(place.place_id);
+          if (!details) continue;
+
+          // Apply filters
+          if (minRating > 0 && (details.rating || 0) < minRating) continue;
+          if (filterPhone && !details.formatted_phone_number) continue;
+          if (filterWebsite && !details.website) continue;
+          if (filterOpen && details.opening_hours && !details.opening_hours.isOpen()) continue;
+
+          // Dedup by place_id
+          if (allLeads.find(l => l.place_id === details.place_id)) continue;
+
+          const lead = {
+            place_id: details.place_id,
+            name: details.name || '',
+            category: category,
+            types: (details.types || []).filter(t => !['point_of_interest','establishment'].includes(t)).slice(0,2).map(t => t.replace(/_/g,' ')).join(', '),
+            address: details.formatted_address || '',
+            phone: details.formatted_phone_number || details.international_phone_number || '',
+            website: details.website || '',
+            rating: details.rating || null,
+            reviews: details.user_ratings_total || 0,
+            status: details.business_status || '',
+            open_now: details.opening_hours ? details.opening_hours.isOpen() : null,
+            hours: details.opening_hours ? (details.opening_hours.weekday_text || []).join(' | ') : '',
+            google_url: `https://www.google.com/maps/place/?q=place_id:${details.place_id}`,
+            location: location,
+            lat: details.geometry ? details.geometry.location.lat() : '',
+            lng: details.geometry ? details.geometry.location.lng() : '',
+          };
+          allLeads.push(lead);
+          applyFilters();
+        }
+      } catch(e) {
+        console.warn('Search error:', e);
+      }
+      done++;
+      await sleep(200); // be nice to API
+    }
+  }
+
+  setProgress(totalJobs, totalJobs, `Done — ${allLeads.length} leads found.`);
+  document.getElementById('generateBtn').disabled = false;
+  document.getElementById('stopBtn').style.display = 'none';
+  document.getElementById('clearBtn').disabled = allLeads.length === 0;
+  document.getElementById('exportBtn').disabled = allLeads.length === 0;
+
+  // Populate category filter
+  const cats = [...new Set(allLeads.map(l => l.category))].sort();
+  const sel = document.getElementById('filterCat');
+  sel.innerHTML = '<option value="">All</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function stopGeneration() {
+  stopRequested = true;
+  setProgress(0, 1, 'Stopping...');
+}
+
+function setProgress(done, total, label) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = label;
+}
+
+// ============================================================
+//  PLACES API HELPERS
+// ============================================================
+function searchPlaces(query, location, radius) {
+  return new Promise((resolve) => {
+    const request = {
+      query: `${query} in ${location}`,
+      fields: ['place_id','name','formatted_address','geometry','types','rating','user_ratings_total','business_status'],
+      radius
+    };
+    placesService.textSearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        resolve(results);
+      } else {
+        resolve([]);
+      }
+    });
+  });
+}
+
+function getPlaceDetails(placeId) {
+  return new Promise((resolve) => {
+    const request = {
+      placeId,
+      fields: [
+        'place_id','name','formatted_address','formatted_phone_number',
+        'international_phone_number','website','rating','user_ratings_total',
+        'business_status','opening_hours','geometry','types'
+      ]
+    };
+    placesService.getDetails(request, (result, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK) {
+        resolve(result);
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+//  RENDER
+// ============================================================
+function applyFilters() {
+  const query = document.getElementById('searchFilter').value.toLowerCase();
+  const sortBy = document.getElementById('sortBy').value;
+  const catFilter = document.getElementById('filterCat').value;
+
+  filteredLeads = allLeads.filter(l => {
+    if (catFilter && l.category !== catFilter) return false;
+    if (query) {
+      const haystack = (l.name + l.address + l.category + l.phone + l.website + l.location).toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
+    return true;
+  });
+
+  if (sortBy === 'name') filteredLeads.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sortBy === 'rating-desc') filteredLeads.sort((a,b) => (b.rating||0)-(a.rating||0));
+  else if (sortBy === 'rating-asc') filteredLeads.sort((a,b) => (a.rating||0)-(b.rating||0));
+  else if (sortBy === 'reviews-desc') filteredLeads.sort((a,b) => (b.reviews||0)-(a.reviews||0));
+
+  renderLeads();
+  updateStats();
+  document.getElementById('shownCount').textContent = `${filteredLeads.length} shown`;
+}
+
+function sortByCol(col) {
+  if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = -1; }
+  document.getElementById('sortBy').value = col === 'name' ? 'name' : col === 'rating' ? 'rating-desc' : 'reviews-desc';
+  applyFilters();
+}
+
+function renderLeads() {
+  if (currentView === 'table') renderTable();
+  else renderCards();
+  updateStats();
+
+  const hasLeads = allLeads.length > 0;
+  document.getElementById('emptyState').style.display = hasLeads ? 'none' : 'flex';
+  document.getElementById('leadsTable').style.display = hasLeads ? 'table' : 'none';
+}
+
+function renderTable() {
+  const tbody = document.getElementById('leadsBody');
+  tbody.innerHTML = filteredLeads.map((l, i) => `
+    <tr id="row-${l.place_id}">
+      <td class="td-checkbox"><input type="checkbox" class="row-check" data-id="${l.place_id}" style="width:14px;height:14px;accent-color:var(--accent)" /></td>
+      <td class="td-num">${i + 1}</td>
+      <td class="td-name">
+        ${escHtml(l.name)}
+        <small>${escHtml(l.types || l.category)}</small>
+      </td>
+      <td><span class="badge badge-blue">${escHtml(l.category)}</span></td>
+      <td class="td-address">${escHtml(l.address)}</td>
+      <td class="td-phone">
+        ${l.phone
+          ? `<a href="tel:${l.phone.replace(/\s/g,'')}">${escHtml(l.phone)}</a>`
+          : `<span class="badge badge-gray">—</span>`}
+      </td>
+      <td class="td-website">
+        ${l.website
+          ? `<a href="${escHtml(l.website)}" target="_blank" rel="noopener">${escHtml(shortenUrl(l.website))}</a>`
+          : `<span class="badge badge-gray">—</span>`}
+      </td>
+      <td class="td-rating">
+        ${l.rating != null
+          ? `<span class="rating-pill">${l.rating.toFixed(1)}</span>`
+          : `<span class="badge badge-gray">—</span>`}
+      </td>
+      <td>${l.reviews ? l.reviews.toLocaleString() : '—'}</td>
+      <td>${l.open_now === true ? '<span class="badge badge-green">Open</span>' : l.open_now === false ? '<span class="badge badge-red">Closed</span>' : '<span class="badge badge-gray">—</span>'}</td>
+      <td><span style="color:var(--text3);font-size:.75rem">${escHtml(l.location.split(',')[0])}</span></td>
+      <td>
+        <div class="action-cell">
+          <a class="icon-btn" href="${escHtml(l.google_url)}" target="_blank" rel="noopener" title="Open in Google Maps">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Maps
+          </a>
+          ${l.website ? `<a class="icon-btn" href="${escHtml(l.website)}" target="_blank" rel="noopener" title="Visit website">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Site
+          </a>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderCards() {
+  const grid = document.getElementById('cardView');
+  grid.innerHTML = filteredLeads.map((l, i) => `
+    <div class="lead-card">
+      <div class="lead-card-number">#${i+1}</div>
+      <div class="lead-card-name">${escHtml(l.name)}</div>
+      <div class="lead-card-type">
+        <span class="badge badge-blue">${escHtml(l.category)}</span>
+        ${l.types ? `<span style="color:var(--text3);font-size:.72rem;margin-left:6px">${escHtml(l.types)}</span>` : ''}
+      </div>
+
+      <div class="lead-card-detail">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        ${escHtml(l.address || '—')}
+      </div>
+      <div class="lead-card-detail">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.42 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.2a16 16 0 0 0 6.29 6.29l1.36-1.36a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        ${l.phone ? `<a href="tel:${l.phone}">${escHtml(l.phone)}</a>` : '<span style="color:var(--text3)">No phone</span>'}
+      </div>
+      <div class="lead-card-detail">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        ${l.website ? `<a href="${escHtml(l.website)}" target="_blank" rel="noopener">${escHtml(shortenUrl(l.website))}</a>` : '<span style="color:var(--text3)">No website</span>'}
+      </div>
+
+      <div class="lead-card-footer">
+        <div class="lead-card-rating">
+          ${l.rating != null ? `<span class="rating-pill">⭐ ${l.rating.toFixed(1)}</span>` : ''}
+          <span class="reviews-count">${l.reviews ? l.reviews.toLocaleString() + ' reviews' : 'No reviews'}</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${l.open_now === true ? '<span class="badge badge-green">Open</span>' : l.open_now === false ? '<span class="badge badge-red">Closed</span>' : ''}
+          <a class="icon-btn" href="${escHtml(l.google_url)}" target="_blank" rel="noopener">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Maps
+          </a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+//  STATS
+// ============================================================
+function updateStats() {
+  const leads = allLeads;
+  document.getElementById('statTotal').textContent = leads.length;
+  document.getElementById('statWithPhone').textContent = leads.filter(l => l.phone).length;
+  document.getElementById('statWithSite').textContent = leads.filter(l => l.website).length;
+  const rated = leads.filter(l => l.rating != null);
+  const avg = rated.length ? (rated.reduce((s, l) => s + l.rating, 0) / rated.length).toFixed(1) : '—';
+  document.getElementById('statAvgRating').textContent = avg;
+}
+
+// ============================================================
+//  VIEW TOGGLE
+// ============================================================
+function setView(v) {
+  currentView = v;
+  document.getElementById('tableView').style.display = v === 'table' ? 'flex' : 'none';
+  document.getElementById('cardView').style.display = v === 'card' ? 'grid' : 'none';
+  document.getElementById('tableView').style.flexDirection = 'column';
+  document.getElementById('btnTable').classList.toggle('active', v === 'table');
+  document.getElementById('btnCard').classList.toggle('active', v === 'card');
+  renderLeads();
+}
+
+// ============================================================
+//  CLEAR
+// ============================================================
+function clearLeads() {
+  if (!confirm('Clear all leads?')) return;
+  allLeads = [];
+  filteredLeads = [];
+  applyFilters();
+  document.getElementById('clearBtn').disabled = true;
+  document.getElementById('exportBtn').disabled = true;
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('filterCat').innerHTML = '<option value="">All</option>';
+  document.getElementById('shownCount').textContent = '0 shown';
+}
+
+// ============================================================
+//  SELECT ALL
+// ============================================================
+function toggleSelectAll(master) {
+  document.querySelectorAll('.row-check').forEach(cb => cb.checked = master.checked);
+}
+
+// ============================================================
+//  EXPORT CSV
+// ============================================================
+function exportCSV() {
+  const checks = [...document.querySelectorAll('.row-check:checked')].map(c => c.dataset.id);
+  const leads = checks.length > 0
+    ? allLeads.filter(l => checks.includes(l.place_id))
+    : filteredLeads.length > 0 ? filteredLeads : allLeads;
+
+  const headers = ['#','Name','Category','Business Type','Address','Phone','Website','Rating','Reviews','Status','Open Now','Hours','Location','Latitude','Longitude','Google Maps URL'];
+  const rows = leads.map((l, i) => [
+    i + 1,
+    csvEscape(l.name),
+    csvEscape(l.category),
+    csvEscape(l.types),
+    csvEscape(l.address),
+    csvEscape(l.phone),
+    csvEscape(l.website),
+    l.rating != null ? l.rating.toFixed(1) : '',
+    l.reviews || '',
+    csvEscape(l.status),
+    l.open_now === true ? 'Yes' : l.open_now === false ? 'No' : '',
+    csvEscape(l.hours),
+    csvEscape(l.location),
+    l.lat || '',
+    l.lng || '',
+    csvEscape(l.google_url)
+  ]);
+
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function csvEscape(val) {
+  if (!val) return '';
+  const s = String(val).replace(/"/g,'""');
+  return /[",\n]/.test(s) ? `"${s}"` : s;
+}
+
+function shortenUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
+</script>
+</body>
+</html>
