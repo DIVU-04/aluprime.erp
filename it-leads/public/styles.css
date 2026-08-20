@@ -537,6 +537,92 @@ a:hover {
   font-size: 0.82rem;
 }
 
+.phone-access h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.phone-access__warn {
+  margin-bottom: 0.65rem;
+}
+
+.network-url-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.network-url-box code {
+  display: block;
+  font-size: 0.82rem;
+  word-break: break-all;
+  background: transparent;
+  padding: 0;
+}
+
+.phone-access__actions {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+}
+
+.btn--small {
+  padding: 0.45rem 0.65rem;
+  min-height: 36px;
+  font-size: 0.78rem;
+}
+
+.network-qr {
+  text-align: center;
+  margin-bottom: 0.65rem;
+}
+
+.network-qr img {
+  border-radius: 8px;
+  background: #fff;
+  padding: 6px;
+}
+
+.network-qr span {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.phone-tips {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.phone-tips li + li {
+  margin-top: 0.25rem;
+}
+
+.mobile-localhost-warning {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fecaca;
+}
+
+.mobile-localhost-warning p {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #fca5a5;
+}
+
+.mobile-localhost-warning code {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 .empty-state {
   margin-top: 2rem;
   max-width: 720px;

@@ -19,10 +19,23 @@ Works as a web app in any browser, installable as a PWA on mobile, and runnable 
 
 ### Mobile install (iOS & Android)
 
+**Important:** `localhost` only works on your computer. Your phone needs your PC's network address.
+
 1. Start the app on your PC/Mac (`run.bat`, `run.sh`, or Docker)
-2. On your phone (same Wi-Fi), open the **Network URL** shown in the terminal (e.g. `http://192.168.1.5:8080`)
-3. **iOS:** Safari → Share → Add to Home Screen
-4. **Android:** Chrome → menu → Install app / Add to Home screen
+2. On your computer, open **http://localhost:8080** and look at the **Open on Phone** box (URL + QR code)
+3. On your phone (same Wi-Fi, not mobile data), open that URL — e.g. `http://192.168.1.5:8080`
+4. **iOS:** Safari → Share → Add to Home Screen
+5. **Android:** Chrome → menu → Install app
+
+### Phone won't connect? Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Used `localhost` on phone | Use `http://YOUR-PC-IP:8080` from the **Open on Phone** section |
+| Phone on mobile data | Switch phone to same Wi-Fi as your computer |
+| Windows firewall blocks | Right-click `scripts/open-firewall-windows.bat` → **Run as administrator** |
+| Wrong IP | In the app sidebar, click **Refresh** under Open on Phone |
+| Still failing | Try `ipconfig` (Windows) or `ifconfig` (Mac) and use the `192.168.x.x` address |
 
 The UI is responsive with touch-friendly buttons, safe-area support for iPhone notch, and no zoom on input focus.
 

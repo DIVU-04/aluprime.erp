@@ -10,14 +10,15 @@
       return {
         id: "ios",
         name: "iOS",
-        install:
-          "Tap Share → Add to Home Screen to install this app on iPhone or iPad.",
+        mobile: true,
+        install: "Tap Share → Add to Home Screen to install this app on iPhone or iPad.",
       };
     }
     if (/Android/.test(ua)) {
       return {
         id: "android",
         name: "Android",
+        mobile: true,
         install: "Tap the browser menu → Install app / Add to Home screen.",
       };
     }
@@ -25,6 +26,7 @@
       return {
         id: "windows",
         name: "Windows",
+        mobile: false,
         install: "Run run.bat or run.ps1, then open http://localhost:8080 in Edge or Chrome.",
       };
     }
@@ -32,6 +34,7 @@
       return {
         id: "macos",
         name: "macOS",
+        mobile: false,
         install: "Run ./run.sh in Terminal, then open http://localhost:8080 in Safari or Chrome.",
       };
     }
@@ -39,14 +42,21 @@
       return {
         id: "ubuntu",
         name: "Ubuntu / Linux",
+        mobile: false,
         install: "Run ./run.sh or bash scripts/install-ubuntu.sh, then open http://localhost:8080.",
       };
     }
     return {
       id: "web",
       name: "Web",
+      mobile: touch,
       install: "Works in any modern browser on desktop, tablet, or phone.",
     };
+  }
+
+  function isMobileDevice() {
+    const info = detectPlatform();
+    return info.mobile || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
   }
 
   function registerServiceWorker() {
@@ -56,8 +66,72 @@
     });
   }
 
+  function showMobileLocalhostWarning() {
+    const host = window.location.hostname;
+    const warning = document.getElementById("mobileLocalhostWarning");
+    if (!warning) return;
+
+    if (isMobileDevice() && (host === "localhost" || host === "127.0.0.1")) {
+      warning.hidden = false;
+    }
+  }
+
+  async function loadNetworkPanel() {
+    const urlEl = document.getElementById("networkUrl");
+    const qrWrap = document.getElementById("networkQrWrap");
+    const qrImg = document.getElementById("networkQr");
+    const tipsEl = document.getElementById("networkTips");
+    const copyBtn = document.getElementById("copyNetworkUrlBtn");
+    const refreshBtn = document.getElementById("refreshNetworkBtn");
+
+    if (!urlEl) return;
+
+    try {
+      const response = await fetch("/api/network");
+      const data = await response.json();
+
+      if (data.primary_network_url) {
+        urlEl.textContent = data.primary_network_url;
+        if (qrWrap && qrImg && data.qr_url) {
+          qrImg.src = data.qr_url;
+          qrWrap.hidden = false;
+        }
+      } else {
+        urlEl.textContent = "Could not detect network IP. Check Wi-Fi connection.";
+        if (qrWrap) qrWrap.hidden = true;
+      }
+
+      if (tipsEl && data.tips) {
+        tipsEl.innerHTML = data.tips.map((tip) => `<li>${tip}</li>`).join("");
+      }
+
+      if (copyBtn) {
+        copyBtn.onclick = async () => {
+          const link = data.primary_network_url || "";
+          if (!link) return;
+          try {
+            await navigator.clipboard.writeText(link);
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => {
+              copyBtn.textContent = "Copy link";
+            }, 2000);
+          } catch {
+            prompt("Copy this URL:", link);
+          }
+        };
+      }
+
+      if (refreshBtn) {
+        refreshBtn.onclick = () => loadNetworkPanel();
+      }
+    } catch {
+      urlEl.textContent = "Could not load network info. Is the server running?";
+    }
+  }
+
   function showPlatformBanner(info) {
     if (localStorage.getItem(PLATFORM_KEY)) return;
+    if (isMobileDevice()) return;
 
     const banner = document.getElementById("platformBanner");
     const title = document.getElementById("platformTitle");
@@ -76,7 +150,10 @@
     });
   }
 
-  document.documentElement.dataset.platform = detectPlatform().id;
+  const platform = detectPlatform();
+  document.documentElement.dataset.platform = platform.id;
   registerServiceWorker();
-  showPlatformBanner(detectPlatform());
+  showPlatformBanner(platform);
+  showMobileLocalhostWarning();
+  loadNetworkPanel();
 })();

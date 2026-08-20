@@ -3,14 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from server.categories import IT_LEAD_CATEGORIES
-from server.locations import COUNTRIES, PRESET_LOCATIONS, REGIONS
+from server.network import build_network_info
 from server.config import settings
 from server.exporter import (
     DOWNLOAD_FORMATS,
@@ -101,6 +101,13 @@ async def health() -> dict[str, Any]:
         "status": "ok",
         "api_configured": bool(settings.google_maps_api_key.strip()),
     }
+
+
+@app.get("/api/network")
+async def network_info(request: Request) -> dict[str, Any]:
+    """URLs for opening the app from phone/tablet on the same Wi-Fi."""
+    host = request.headers.get("host", "")
+    return build_network_info(port=8080, request_host=host)
 
 
 @app.get("/api/config")

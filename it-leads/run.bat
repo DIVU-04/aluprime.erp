@@ -28,10 +28,28 @@ if not exist .venv (
   call .venv\Scripts\activate.bat
 )
 
+set LOCAL_IP=
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4"') do (
+  set "candidate=%%a"
+  set "candidate=!candidate: =!"
+  if not "!candidate!"=="" if not "!candidate!"=="127.0.0.1" set LOCAL_IP=!candidate!
+)
+
 echo.
-echo Starting server...
-echo   Local:   http://localhost:8080
-echo   Network: http://YOUR-PC-IP:8080  (for phone/tablet on same Wi-Fi)
+echo ============================================
+echo   ON YOUR COMPUTER:  http://localhost:8080
+if defined LOCAL_IP (
+  echo   ON YOUR PHONE:     http://%LOCAL_IP%:8080
+  echo.
+  echo   Phone must use the address above - NOT localhost!
+  echo   Same Wi-Fi required. If phone fails, run as Admin:
+  echo   scripts\open-firewall-windows.bat
+) else (
+  echo   ON YOUR PHONE:     run ipconfig to find your IPv4 address
+  echo                       then open http://YOUR-IP:8080
+)
+echo ============================================
 echo.
+
 python -m uvicorn server.main:app --host 0.0.0.0 --port 8080 --reload
 pause

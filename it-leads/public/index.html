@@ -122,6 +122,25 @@
       </form>
 
       <div class="sidebar__footer">
+        <section class="panel phone-access" id="phoneAccessPanel">
+          <h2>📱 Open on Phone</h2>
+          <p class="hint phone-access__warn">
+            <strong>localhost does not work on your phone.</strong> Use the link below on iPhone/Android (same Wi-Fi).
+          </p>
+          <div id="networkUrlBox" class="network-url-box">
+            <code id="networkUrl">Loading network address…</code>
+          </div>
+          <div class="phone-access__actions">
+            <button type="button" class="btn btn--ghost btn--small" id="copyNetworkUrlBtn">Copy link</button>
+            <button type="button" class="btn btn--ghost btn--small" id="refreshNetworkBtn">Refresh</button>
+          </div>
+          <div id="networkQrWrap" class="network-qr" hidden>
+            <img id="networkQr" alt="QR code to open on phone" width="160" height="160" />
+            <span>Scan with phone camera</span>
+          </div>
+          <ul id="networkTips" class="phone-tips"></ul>
+        </section>
+
         <div id="apiStatus" class="status status--warn">Checking API…</div>
         <p class="footnote">Uses Google Places API. Add your API key in <code>.env</code>.</p>
       </div>
@@ -140,6 +159,14 @@
           <button type="button" class="btn btn--ghost" id="copyBtn" disabled>Copy All</button>
         </div>
       </header>
+
+      <div id="mobileLocalhostWarning" class="mobile-localhost-warning" hidden>
+        <strong>Cannot use localhost on your phone</strong>
+        <p>
+          On your computer, open <code>http://localhost:8080</code> and use the
+          <strong>Open on Phone</strong> section to get the correct link or QR code.
+        </p>
+      </div>
 
       <div id="alert" class="alert" hidden></div>
 
