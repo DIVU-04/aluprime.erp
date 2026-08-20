@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <title>MapLead IT | Google Maps Lead Generation for IT Services</title>
+  <meta
+    name="description"
+    content="Generate local business leads for IT service companies by selecting business type, location, radius, and service focus. Built for Google Places API workflows."
+  />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <header class="site-header" id="top">
+    <div class="container nav">
+      <a class="brand" href="#top" aria-label="MapLead IT home">
+        <span class="brand__mark">ML</span>
+        <span>
+          <strong>MapLead IT</strong>
+          <small>Google Maps lead finder</small>
+        </span>
+      </a>
+
+      <button class="nav__toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span class="sr-only">Toggle navigation</span>
+      </button>
+
+      <nav class="nav__links" id="navLinks">
+        <a href="#generator">Generator</a>
+        <a href="#results">Results</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#api">API Setup</a>
+        <a class="btn btn--sm" href="#generator">Start Now</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__content">
+          <p class="eyebrow">Lead generation software for IT service companies</p>
+          <h1>Find local business leads from Google Maps data.</h1>
+          <p class="hero__text">
+            Select any business type and location, score the best-fit companies,
+            export lead details, and prepare an outreach pitch for your IT
+            services.
+          </p>
+          <div class="hero__actions">
+            <a class="btn" href="#generator">Generate leads</a>
+            <a class="btn btn--ghost" href="#api">Connect Google Places API</a>
+          </div>
+          <div class="hero__badges" aria-label="Key capabilities">
+            <span>Business type filters</span>
+            <span>Location selection</span>
+            <span>CSV export</span>
+            <span>Lead scoring</span>
+          </div>
+        </div>
+
+        <aside class="hero__panel" aria-label="Generated lead preview">
+          <div class="panel-card">
+            <span class="status-dot"></span>
+            <p class="panel-card__label">High-value prospect</p>
+            <h2>Ahmedabad Dental Care</h2>
+            <dl>
+              <div><dt>Need</dt><dd>Website + local SEO</dd></div>
+              <div><dt>Score</dt><dd>91/100</dd></div>
+              <div><dt>Source</dt><dd>Places API ready</dd></div>
+            </dl>
+          </div>
+          <div class="mini-grid">
+            <div><strong>500+</strong><span>search categories</span></div>
+            <div><strong>Any</strong><span>city or area</span></div>
+            <div><strong>CSV</strong><span>download</span></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section section--light" id="generator">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">Lead generator</p>
+          <h2>Select lead type and location</h2>
+          <p>
+            This front-end works in demo mode immediately. Add your secure
+            backend endpoint to fetch live public business data from the Google
+            Places API.
+          </p>
+        </div>
+
+        <form class="generator card" id="leadForm">
+          <div class="field">
+            <label for="businessType">Lead type</label>
+            <select id="businessType" name="businessType">
+              <option value="all">All local businesses</option>
+              <option value="clinics">Clinics and hospitals</option>
+              <option value="restaurants">Restaurants and cafes</option>
+              <option value="hotels">Hotels and guest houses</option>
+              <option value="retail">Retail shops and showrooms</option>
+              <option value="education">Schools and coaching centers</option>
+              <option value="real-estate">Real estate and builders</option>
+              <option value="manufacturing">Manufacturing and factories</option>
+              <option value="professional">Professional services</option>
+              <option value="salons">Salons, spas, and gyms</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="location">Location</label>
+            <input
+              id="location"
+              name="location"
+              list="locationSuggestions"
+              placeholder="Ahmedabad, Gujarat"
+              autocomplete="off"
+              required
+            />
+            <datalist id="locationSuggestions">
+              <option value="Ahmedabad, Gujarat"></option>
+              <option value="Surat, Gujarat"></option>
+              <option value="Vadodara, Gujarat"></option>
+              <option value="Mumbai, Maharashtra"></option>
+              <option value="Pune, Maharashtra"></option>
+              <option value="Delhi NCR"></option>
+              <option value="Bengaluru, Karnataka"></option>
+              <option value="Hyderabad, Telangana"></option>
+              <option value="Chennai, Tamil Nadu"></option>
+              <option value="Jaipur, Rajasthan"></option>
+            </datalist>
+          </div>
+
+          <div class="field">
+            <label for="radius">Radius</label>
+            <select id="radius" name="radius">
+              <option value="2">2 km</option>
+              <option value="5" selected>5 km</option>
+              <option value="10">10 km</option>
+              <option value="25">25 km</option>
+              <option value="50">50 km</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="leadCount">Lead count</label>
+            <select id="leadCount" name="leadCount">
+              <option value="5">5 leads</option>
+              <option value="10" selected>10 leads</option>
+              <option value="20">20 leads</option>
+              <option value="50">50 leads</option>
+            </select>
+          </div>
+
+          <div class="field field--wide">
+            <label for="serviceFocus">IT service to sell</label>
+            <select id="serviceFocus" name="serviceFocus">
+              <option value="website">Website development</option>
+              <option value="seo">Local SEO and Google Business Profile</option>
+              <option value="software">Custom software / ERP / CRM</option>
+              <option value="cloud">Cloud, email, and backup setup</option>
+              <option value="security">Cybersecurity and CCTV support</option>
+              <option value="automation">Automation and AI chatbot</option>
+            </select>
+          </div>
+
+          <div class="field field--wide">
+            <label for="apiEndpoint">Optional secure Places API endpoint</label>
+            <input
+              id="apiEndpoint"
+              name="apiEndpoint"
+              type="url"
+              placeholder="https://your-domain.com/api/places-leads"
+            />
+            <small>Do not paste a Google API key here. Use a server endpoint that protects your key.</small>
+          </div>
+
+          <div class="generator__actions">
+            <button class="btn" type="submit">Generate leads</button>
+            <button class="btn btn--secondary" id="loadDemo" type="button">Load demo leads</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section" id="results">
+      <div class="container">
+        <div class="results-top">
+          <div>
+            <p class="eyebrow">Lead results</p>
+            <h2>Qualified prospects</h2>
+            <p class="muted" id="resultNote">
+              Generate leads to see business names, addresses, phone numbers,
+              websites, maps links, ratings, and IT service suggestions.
+            </p>
+          </div>
+          <div class="results-actions">
+            <button class="btn btn--secondary" id="copyPitch" type="button" disabled>Copy outreach pitch</button>
+            <button class="btn" id="exportCsv" type="button" disabled>Export CSV</button>
+          </div>
+        </div>
+
+        <div class="metric-grid" id="metrics" aria-live="polite">
+          <div class="metric"><strong>0</strong><span>Total leads</span></div>
+          <div class="metric"><strong>0</strong><span>High score</span></div>
+          <div class="metric"><strong>0</strong><span>Missing websites</span></div>
+          <div class="metric"><strong>0</strong><span>With phone</span></div>
+        </div>
+
+        <div class="lead-layout">
+          <div class="lead-list" id="leadList" aria-live="polite"></div>
+          <div class="table-wrap card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Business</th>
+                  <th>Category</th>
+                  <th>Phone</th>
+                  <th>Website</th>
+                  <th>Score</th>
+                  <th>Maps</th>
+                </tr>
+              </thead>
+              <tbody id="leadTable">
+                <tr>
+                  <td colspan="6">No leads generated yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--dark" id="workflow">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">Sales workflow</p>
+          <h2>Built for IT service outreach</h2>
+          <p>
+            Each lead includes suggested service fit so your team can contact
+            businesses with a relevant offer instead of a generic message.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article class="step card">
+            <span>01</span>
+            <h3>Choose market</h3>
+            <p>Select business category, city or area, radius, and number of leads.</p>
+          </article>
+          <article class="step card">
+            <span>02</span>
+            <h3>Collect public details</h3>
+            <p>Use your backend to request official Places API fields such as phone, website, rating, and maps URL.</p>
+          </article>
+          <article class="step card">
+            <span>03</span>
+            <h3>Score opportunities</h3>
+            <p>Prioritize businesses missing a website, weak local SEO, or likely to need software and cloud support.</p>
+          </article>
+          <article class="step card">
+            <span>04</span>
+            <h3>Export and follow up</h3>
+            <p>Download CSV, import into your CRM, and send personalized outreach using the generated pitch.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--light" id="api">
+      <div class="container api-grid">
+        <div>
+          <p class="eyebrow">Google Places API setup</p>
+          <h2>Connect live Google Maps data safely</h2>
+          <p>
+            Google Maps business data should be accessed through official APIs.
+            Keep the API key on your server, then return only the fields your
+            sales team needs.
+          </p>
+          <ul class="check-list">
+            <li>Enable Places API in Google Cloud Console.</li>
+            <li>Create a server endpoint such as <code>/api/places-leads</code>.</li>
+            <li>Protect the API key with domain, IP, quota, and billing limits.</li>
+            <li>Request public business fields only and respect opt-out requests.</li>
+          </ul>
+        </div>
+
+        <div class="code-card">
+          <p>Expected endpoint response</p>
+          <pre><code>{
+  "leads": [
+    {
+      "name": "Business name",
+      "category": "Clinic",
+      "address": "Full address",
+      "phone": "+91 98765 43210",
+      "website": "https://example.com",
+      "rating": 4.4,
+      "reviews": 128,
+      "mapsUrl": "https://maps.google.com/...",
+      "openingHours": "Open now"
+    }
+  ]
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq">
+      <div class="container">
+        <div class="section__head">
+          <p class="eyebrow">Important notes</p>
+          <h2>Responsible lead generation</h2>
+        </div>
+        <div class="faq-grid">
+          <article class="card">
+            <h3>Can it get every lead from every location?</h3>
+            <p>
+              You can search any category and location your Google Places API
+              quota supports. Very large campaigns should be paginated, rate
+              limited, and stored in a CRM.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Can it scrape Google Maps?</h3>
+            <p>
+              This app is designed for official API usage, not scraping. That
+              keeps the tool more reliable and helps avoid terms-of-service and
+              account-risk issues.
+            </p>
+          </article>
+          <article class="card">
+            <h3>What details are useful for IT sales?</h3>
+            <p>
+              Business name, category, address, phone, website, rating, maps URL,
+              opening status, and a suggested service fit are included in the
+              result model.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p>MapLead IT - Lead generation workflow for IT service companies.</p>
+      <p>Use official APIs, comply with local privacy laws, and contact businesses respectfully.</p>
+      <p>&copy; <span id="year"></span> MapLead IT</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/script.js"></script>
+</body>
+</html>
