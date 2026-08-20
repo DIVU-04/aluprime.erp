@@ -6,6 +6,11 @@ GoMechanic, adapted to KB Garage's black & gold brand and services.
 
 > **Quality Comes First**
 
+The repository also contains a separate internal prospecting application in
+[`leadfinder/`](leadfinder/README.md). It uses the official Google Places API
+to build and qualify local-business lead lists without changing this public
+garage website.
+
 ## Features
 
 - Sticky navbar with mobile hamburger menu

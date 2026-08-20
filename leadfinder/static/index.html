@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>LeadFinder — Local business prospecting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="LeadFinder home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32">
+              <path d="M6 22.5V9.5L16 4l10 5.5v13L16 28 6 22.5Z" />
+              <circle cx="16" cy="15" r="4" />
+              <path d="M16 19v6" />
+            </svg>
+          </span>
+          <span>Lead<span>Finder</span></span>
+        </a>
+
+        <nav class="side-nav" aria-label="Main navigation">
+          <button class="nav-item active" type="button" data-view="leads">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16M4 12h16M4 19h10" />
+            </svg>
+            Lead database
+          </button>
+          <button class="nav-item" type="button" data-open-search>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m16 16 4 4" />
+            </svg>
+            New search
+          </button>
+        </nav>
+
+        <div class="sidebar-note">
+          <span class="eyebrow">Built for IT services</span>
+          <strong>Find the right local businesses.</strong>
+          <p>Score, qualify and export prospects from selected markets.</p>
+        </div>
+
+        <div class="source-mark">
+          <span class="google-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          Places data by Google
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="mobile-menu" type="button" aria-label="Open navigation">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </button>
+          <div>
+            <p class="eyebrow">Prospecting workspace</p>
+            <h1>Lead database</h1>
+          </div>
+          <div class="topbar-actions">
+            <div class="api-state" id="apiState">
+              <span></span>
+              Checking API
+            </div>
+            <button class="button button-primary" type="button" data-open-search>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Generate leads
+            </button>
+          </div>
+        </header>
+
+        <div class="page-content">
+          <section class="metric-grid" aria-label="Lead summary">
+            <article class="metric-card">
+              <div class="metric-icon blue">
+                <svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2" /></svg>
+              </div>
+              <div><span>Total leads</span><strong id="totalLeads">0</strong></div>
+              <small>Saved prospects</small>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon violet">
+                <svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18" /></svg>
+              </div>
+              <div><span>New leads</span><strong id="newLeads">0</strong></div>
+              <small>Ready to contact</small>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon green">
+                <svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></svg>
+              </div>
+              <div><span>Qualified</span><strong id="qualifiedLeads">0</strong></div>
+              <small>Sales opportunities</small>
+            </article>
+            <article class="metric-card">
+              <div class="metric-icon amber">
+                <svg viewBox="0 0 24 24">
+                  <path d="M7 3h3l2 5-3 2a15 15 0 0 0 5 5l2-3 5 2v3a4 4 0 0 1-4 4C9.3 21 3 14.7 3 7a4 4 0 0 1 4-4Z" />
+                </svg>
+              </div>
+              <div><span>With phone</span><strong id="phoneLeads">0</strong></div>
+              <small>Directly contactable</small>
+            </article>
+          </section>
+
+          <section class="table-card">
+            <div class="table-toolbar">
+              <div>
+                <h2>Business leads</h2>
+                <p id="resultCount">No leads loaded</p>
+              </div>
+              <div class="toolbar-actions">
+                <label class="search-field">
+                  <span class="sr-only">Search leads</span>
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m16 16 4 4" /></svg>
+                  <input id="leadSearch" type="search" placeholder="Search business or category" />
+                </label>
+                <select id="statusFilter" aria-label="Filter by status">
+                  <option value="all">All statuses</option>
+                  <option value="new">New</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="qualified">Qualified</option>
+                  <option value="won">Won</option>
+                  <option value="lost">Lost</option>
+                  <option value="do_not_contact">Do not contact</option>
+                </select>
+                <button class="button button-secondary" id="exportButton" type="button">
+                  <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14" /></svg>
+                  Export CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Business</th>
+                    <th>Contact</th>
+                    <th>Market</th>
+                    <th>Rating</th>
+                    <th>Lead score</th>
+                    <th>Status</th>
+                    <th><span class="sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody id="leadRows"></tbody>
+              </table>
+              <div class="empty-state" id="emptyState">
+                <div class="empty-illustration">
+                  <span></span><span></span><span></span>
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></svg>
+                </div>
+                <h3>Your next customer is waiting</h3>
+                <p>Select service types and locations to build a focused prospect list.</p>
+                <button class="button button-primary" type="button" data-open-search>Start a search</button>
+              </div>
+            </div>
+          </section>
+
+          <p class="compliance-note">
+            Use business data responsibly. Respect opt-outs, applicable marketing laws, and Google Maps Platform terms.
+            Place content may have storage and refresh restrictions.
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <aside class="search-drawer" id="searchDrawer" aria-hidden="true" aria-labelledby="drawerTitle">
+      <div class="drawer-header">
+        <div>
+          <p class="eyebrow">Google Places search</p>
+          <h2 id="drawerTitle">Generate a lead list</h2>
+        </div>
+        <button class="icon-button" id="closeDrawer" type="button" aria-label="Close search">
+          <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+
+      <form id="searchForm">
+        <section class="form-section">
+          <div class="section-heading">
+            <span>1</span>
+            <div><h3>Who do you want to reach?</h3><p>Select industries or enter any custom business type.</p></div>
+          </div>
+          <div class="chip-picker" id="serviceChips"></div>
+          <label class="field-label" for="customServices">Custom service types</label>
+          <textarea
+            id="customServices"
+            rows="2"
+            placeholder="e.g. cybersecurity companies, textile exporters"
+          ></textarea>
+          <p class="field-help">Separate multiple types with commas.</p>
+        </section>
+
+        <section class="form-section">
+          <div class="section-heading">
+            <span>2</span>
+            <div><h3>Choose your locations</h3><p>Add cities, districts, states or country-level markets.</p></div>
+          </div>
+          <label class="field-label" for="locations">Locations</label>
+          <textarea
+            id="locations"
+            rows="3"
+            required
+            placeholder="Ahmedabad, Gujarat&#10;Vadodara, Gujarat&#10;Surat, Gujarat"
+          ></textarea>
+          <p class="field-help">One location per line, up to 20.</p>
+        </section>
+
+        <section class="form-section">
+          <div class="section-heading">
+            <span>3</span>
+            <div><h3>Qualify your results</h3><p>Use filters to focus on useful prospects.</p></div>
+          </div>
+          <div class="two-column">
+            <label>
+              <span class="field-label">Minimum rating</span>
+              <select id="minRating">
+                <option value="0">Any rating</option>
+                <option value="3">3.0+</option>
+                <option value="3.5">3.5+</option>
+                <option value="4">4.0+</option>
+                <option value="4.5">4.5+</option>
+              </select>
+            </label>
+            <label>
+              <span class="field-label">Minimum reviews</span>
+              <input id="minReviews" type="number" min="0" value="0" />
+            </label>
+          </div>
+          <div class="two-column">
+            <label>
+              <span class="field-label">Results per search</span>
+              <select id="maxResults">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="40">40</option>
+                <option value="60">60</option>
+              </select>
+            </label>
+            <label>
+              <span class="field-label">Exclude words</span>
+              <input id="excludeKeywords" type="text" placeholder="closed, franchise" />
+            </label>
+          </div>
+          <div class="checkbox-row">
+            <label><input id="requirePhone" type="checkbox" /><span>Must have phone</span></label>
+            <label><input id="requireWebsite" type="checkbox" /><span>Must have website</span></label>
+          </div>
+        </section>
+
+        <div class="cost-preview">
+          <div>
+            <span>Search size</span>
+            <strong id="combinationCount">0 service/location combinations</strong>
+          </div>
+          <p>Google charges per Places request. Review current pricing before large searches.</p>
+        </div>
+
+        <div class="drawer-footer">
+          <button class="button button-ghost" id="demoButton" type="button">Load demo data</button>
+          <button class="button button-primary button-large" id="runSearch" type="submit">
+            <span>Generate leads</span>
+            <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+      </form>
+    </aside>
+
+    <dialog id="leadDialog">
+      <div class="dialog-header">
+        <div><p class="eyebrow">Lead details</p><h2 id="detailName">Business</h2></div>
+        <button class="icon-button" type="button" data-close-dialog aria-label="Close details">
+          <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+      <div id="detailContent"></div>
+      <div class="dialog-footer">
+        <a class="button button-secondary" id="mapsLink" href="#" target="_blank" rel="noopener">Open in Maps</a>
+        <a class="button button-primary" id="contactLink" href="#">Contact business</a>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

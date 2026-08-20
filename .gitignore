@@ -5,6 +5,13 @@ dist/
 node_modules/
 package.json
 package-lock.json
+.venv/
+__pycache__/
+*.py[cod]
+
+# LeadFinder local data and secrets
+leadfinder/data/
+.env
 
 # OS files
 .DS_Store
