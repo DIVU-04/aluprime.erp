@@ -268,6 +268,128 @@ a:hover {
   border-color: rgba(59, 130, 246, 0.35);
 }
 
+.location-queue {
+  margin-bottom: 0.85rem;
+}
+
+.location-queue__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.location-queue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  max-height: 130px;
+  overflow: auto;
+}
+
+.location-queue__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.location-queue__item:first-child {
+  border-top: 0;
+}
+
+.location-queue__empty {
+  padding: 0.65rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.checkbox-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.checkbox-field input {
+  accent-color: var(--primary);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem 0.65rem;
+  margin-bottom: 0.85rem;
+  max-height: 150px;
+  overflow: auto;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.batch-progress {
+  margin-bottom: 0.75rem;
+}
+
+.batch-progress__bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.batch-progress__bar span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary), #6366f1);
+  transition: width 0.25s ease;
+}
+
+.batch-progress p {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.breakdown-bar {
+  margin-bottom: 1rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+}
+
+.breakdown-bar h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.9rem;
+}
+
+.breakdown-bar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.breakdown-bar li {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.breakdown-bar strong {
+  color: var(--text);
+}
+
 .btn {
   border: 0;
   border-radius: var(--radius-sm);
@@ -417,7 +539,7 @@ a:hover {
 
 .stats-bar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
@@ -791,6 +913,10 @@ a:hover {
 
   .stats-bar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .category-grid {
+    grid-template-columns: 1fr;
   }
 
   .modal__body {

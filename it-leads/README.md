@@ -20,6 +20,29 @@ Examples you can search:
 - `São Paulo, Brazil`
 - Any small town or neighborhood worldwide
 
+## Multiple leads (batch generation)
+
+Generate **many leads in one click** from multiple locations and categories:
+
+| Setting | Limit |
+|---------|-------|
+| Locations per batch | Up to **10** |
+| Categories per batch | Up to **5** |
+| Max searches (location × category) | **25** |
+| Leads per search | Up to **60** |
+| Total leads per batch | Up to **500** |
+
+### How to generate multiple leads
+
+1. **Add multiple locations** — type a city and click **+ Add location** (repeat for Mumbai, London, Dubai, etc.)
+2. **Optional: multiple categories** — check "Search multiple categories at once" and pick Offices, Hospitals, Schools, etc.
+3. Set **max leads per search** (5–60)
+4. Click **Generate All Leads**
+5. All results merge into one table — duplicates removed automatically
+6. **Download** everything as one CSV/Excel file
+
+**Example:** 3 cities × 4 categories × 20 leads = up to **240 leads** in one run.
+
 ## Download system
 
 After generating leads, click **Download Leads** to open the download panel:

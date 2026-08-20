@@ -13,6 +13,8 @@ from openpyxl.utils import get_column_letter
 
 LEAD_COLUMNS = [
     ("business_name", "Business Name"),
+    ("source_location", "Search Location"),
+    ("source_category", "Search Category"),
     ("category", "Category"),
     ("types", "All Types"),
     ("phone", "Phone"),

@@ -2,6 +2,8 @@ const HISTORY_KEY = "it-leads-download-history";
 const DEFAULT_FORMAT = "csv";
 const DEFAULT_COLUMNS = [
   "business_name",
+  "source_location",
+  "source_category",
   "category",
   "phone",
   "website",
@@ -29,6 +31,7 @@ const state = {
   activeRegion: "worldwide",
   allCountries: [],
   autocompleteTimer: null,
+  locationQueue: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -41,6 +44,17 @@ const placeIdInput = $("placeId");
 const locationSuggestions = $("locationSuggestions");
 const regionTabs = $("regionTabs");
 const presetLocationGrid = $("presetLocationGrid");
+const locationQueue = $("locationQueue");
+const locationQueueCount = $("locationQueueCount");
+const addLocationBtn = $("addLocationBtn");
+const multiCategoryToggle = $("multiCategoryToggle");
+const categoryCheckGrid = $("categoryCheckGrid");
+const batchEstimate = $("batchEstimate");
+const batchProgress = $("batchProgress");
+const batchProgressFill = $("batchProgressFill");
+const batchProgressText = $("batchProgressText");
+const breakdownBar = $("breakdownBar");
+const breakdownList = $("breakdownList");
 const categoryId = $("categoryId");
 const categoryHint = $("categoryHint");
 const customQueryField = $("customQueryField");
@@ -237,6 +251,147 @@ function selectPresetLocation(city) {
   hideLocationSuggestions();
 }
 
+function renderLocationQueue() {
+  locationQueueCount.textContent = String(state.locationQueue.length);
+
+  if (!state.locationQueue.length) {
+    locationQueue.innerHTML = `<li class="location-queue__empty">No locations queued — add cities or use the field above.</li>`;
+    updateBatchEstimate();
+    return;
+  }
+
+  locationQueue.innerHTML = state.locationQueue
+    .map(
+      (item, index) => `
+        <li class="location-queue__item">
+          <span>${item.location}</span>
+          <button type="button" class="link-btn" data-remove-location="${index}">Remove</button>
+        </li>
+      `
+    )
+    .join("");
+  updateBatchEstimate();
+}
+
+function addCurrentLocationToQueue() {
+  const location = locationInput.value.trim();
+  if (!location) {
+    showAlert("Enter a location before adding to the list.");
+    return;
+  }
+
+  const entry = {
+    location,
+    country_code: countryCode.value || "",
+    place_id: placeIdInput.value.trim(),
+  };
+
+  const exists = state.locationQueue.some(
+    (item) => item.location.toLowerCase() === entry.location.toLowerCase()
+  );
+  if (exists) {
+    showAlert("This location is already in your list.");
+    return;
+  }
+
+  if (state.locationQueue.length >= 10) {
+    showAlert("Maximum 10 locations per batch.");
+    return;
+  }
+
+  state.locationQueue.push(entry);
+  locationInput.value = "";
+  clearPlaceSelection();
+  hideLocationSuggestions();
+  renderLocationQueue();
+}
+
+function removeLocationFromQueue(index) {
+  state.locationQueue.splice(index, 1);
+  renderLocationQueue();
+}
+
+function getSearchLocations() {
+  if (state.locationQueue.length) {
+    return state.locationQueue;
+  }
+
+  const location = locationInput.value.trim();
+  if (!location) return [];
+
+  return [
+    {
+      location,
+      country_code: countryCode.value || "",
+      place_id: placeIdInput.value.trim(),
+    },
+  ];
+}
+
+function getSelectedCategoryIds() {
+  if (multiCategoryToggle.checked) {
+    const ids = [...categoryCheckGrid.querySelectorAll('input[type="checkbox"]:checked')].map(
+      (input) => input.value
+    );
+    return ids.length ? ids : [categoryId.value];
+  }
+  return [categoryId.value];
+}
+
+function renderCategoryCheckGrid() {
+  const categories = state.config?.categories || [];
+  categoryCheckGrid.innerHTML = categories
+    .filter((cat) => cat.id !== "custom")
+    .map(
+      (cat) => `
+        <label class="column-option">
+          <input type="checkbox" value="${cat.id}" ${cat.id === "offices" ? "checked" : ""} />
+          ${cat.label}
+        </label>
+      `
+    )
+    .join("");
+}
+
+function updateBatchEstimate() {
+  const locations = getSearchLocations().length || (locationInput.value.trim() ? 1 : 0);
+  const categories = getSelectedCategoryIds().length;
+  const perSearch = Number(maxResults.value);
+  const searches = locations * categories;
+  const maxLeads = searches * perSearch;
+
+  batchEstimate.textContent = `${locations} location(s) × ${categories} category(ies) = up to ${maxLeads} leads (${searches} searches)`;
+}
+
+function setBatchProgress(percent, text) {
+  batchProgress.hidden = false;
+  batchProgressFill.style.width = `${percent}%`;
+  batchProgressText.textContent = text;
+}
+
+function hideBatchProgress() {
+  batchProgress.hidden = true;
+  batchProgressFill.style.width = "0%";
+}
+
+function renderBreakdown(breakdown) {
+  if (!breakdown?.length) {
+    breakdownBar.hidden = true;
+    breakdownList.innerHTML = "";
+    return;
+  }
+
+  breakdownBar.hidden = false;
+  breakdownList.innerHTML = breakdown
+    .map((item) => {
+      if (item.error) {
+        return `<li><strong>${item.location}</strong> · ${item.category_label} — <span style="color:#fca5a5">${item.error}</span></li>`;
+      }
+      return `<li><strong>${item.location}</strong> · ${item.category_label} — ${item.added ?? item.count} leads added</li>`;
+    })
+    .join("");
+}
+
 function getCategoryLabel() {
   return state.config?.categories?.find((item) => item.id === categoryId.value)?.label || "";
 }
@@ -391,6 +546,10 @@ function populateConfig(config) {
     .join("");
   categoryId.value = "offices";
   updateCategoryUI();
+  renderCategoryCheckGrid();
+  state.locationQueue = [];
+  renderLocationQueue();
+  updateBatchEstimate();
 
   if (config.api_configured) {
     apiStatus.className = "status status--ok";
@@ -433,18 +592,23 @@ function renderLeads(data) {
 
   if (!hasLeads) {
     resultsTitle.textContent = "No leads found";
-    resultsMeta.textContent = `No results for "${data.query_used}" in ${data.location_used}. Try a wider radius or different category.`;
+    resultsMeta.textContent = `No results for "${data.query_used}" in ${data.location_used}. Try more locations, wider radius, or different categories.`;
     leadsBody.innerHTML = "";
+    renderBreakdown(data.breakdown || []);
     return;
   }
 
+  const dupNote = data.duplicates_removed ? ` · ${data.duplicates_removed} duplicates removed` : "";
   resultsTitle.textContent = `${data.total} Leads Generated`;
-  resultsMeta.textContent = `"${data.query_used}" near ${data.location_used}`;
+  resultsMeta.textContent = `${data.locations_searched || 1} location(s), ${data.categories_searched || 1} category(ies), ${data.searches_run || 1} search(es)${dupNote}`;
 
   $("statTotal").textContent = String(data.total);
+  $("statLocations").textContent = String(data.locations_searched || 1);
+  $("statCategories").textContent = String(data.categories_searched || 1);
   $("statPhone").textContent = String(state.leads.filter((lead) => lead.phone).length);
   $("statWebsite").textContent = String(state.leads.filter((lead) => lead.website).length);
-  $("statQuery").textContent = data.query_used;
+
+  renderBreakdown(data.breakdown || []);
 
   leadsBody.innerHTML = state.leads
     .map((lead, index) => {
@@ -459,12 +623,12 @@ function renderLeads(data) {
             <div class="lead-name">${lead.business_name || "—"}</div>
             <div class="lead-sub">${lead.city || ""}${lead.state ? `, ${lead.state}` : ""}</div>
           </td>
-          <td>${lead.category || "—"}</td>
+          <td>${truncate(lead.source_location || "—", 28)}</td>
+          <td>${lead.source_category || lead.category || "—"}</td>
           <td>${lead.phone ? `<a href="tel:${lead.phone}">${lead.phone}</a>` : "—"}</td>
           <td>${website}</td>
-          <td>${truncate(lead.address, 55)}</td>
+          <td>${truncate(lead.address, 45)}</td>
           <td>${formatRating(lead)}</td>
-          <td>${formatStatus(lead.business_status)}</td>
           <td>
             <button type="button" class="link-btn" data-index="${index}">View</button>
           </td>
@@ -477,6 +641,8 @@ function renderLeads(data) {
 function leadToText(lead) {
   return [
     `Business: ${lead.business_name || ""}`,
+    `Search Location: ${lead.source_location || ""}`,
+    `Search Category: ${lead.source_category || ""}`,
     `Category: ${lead.category || ""}`,
     `Phone: ${lead.phone || ""}`,
     `Website: ${lead.website || ""}`,
@@ -532,8 +698,8 @@ async function downloadLeads({ leads, format, filename = "", columns = state.sel
       format,
       leads,
       filename,
-      location: locationInput.value.trim(),
-      category: getCategoryLabel(),
+      location: state.lastSearch?.location_used || locationInput.value.trim(),
+      category: state.lastSearch?.query_used || getCategoryLabel(),
       query_used: state.lastSearch?.query_used || "",
       columns,
     };
@@ -576,6 +742,8 @@ function openLeadModal(lead) {
   modalSubtitle.textContent = lead.category || lead.types || "";
 
   const fields = [
+    ["Search Location", lead.source_location || "—"],
+    ["Search Category", lead.source_category || "—"],
     ["Phone", lead.phone ? `<a href="tel:${lead.phone}">${lead.phone}</a>` : "—"],
     ["International Phone", lead.international_phone || "—"],
     ["Website", lead.website ? `<a href="${lead.website}" target="_blank" rel="noopener">${lead.website}</a>` : "—"],
@@ -640,27 +808,66 @@ async function fetchConfig() {
 
 async function searchLeads() {
   hideAlert();
+
+  const locations = getSearchLocations();
+  const categoryIds = getSelectedCategoryIds();
+
+  if (!locations.length) {
+    showAlert("Add at least one location to generate leads.");
+    return;
+  }
+
+  if (!categoryIds.length) {
+    showAlert("Select at least one business category.");
+    return;
+  }
+
+  if (categoryIds.includes("custom") && !customQuery.value.trim()) {
+    showAlert("Enter a custom keyword for custom search category.");
+    return;
+  }
+
+  const totalSearches = locations.length * categoryIds.length;
+  if (totalSearches > 25) {
+    showAlert(`Too many searches (${totalSearches}). Max 25 location × category combinations.`);
+    return;
+  }
+
   setLoading(true);
+  setBatchProgress(15, `Running ${totalSearches} searches across ${locations.length} location(s)…`);
 
   try {
-    const response = await fetch("/api/search", {
+    const payload = {
+      locations,
+      category_ids: categoryIds,
+      custom_query: customQuery.value.trim(),
+      radius_km: Number(radiusKm.value),
+      max_results_per_search: Number(maxResults.value),
+    };
+
+    const response = await fetch("/api/search/batch", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(getFormPayload()),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.detail || "Search failed.");
+      throw new Error(data.detail || "Batch search failed.");
     }
 
+    setBatchProgress(100, `Done — ${data.total} leads collected`);
     renderLeads(data);
-    showAlert(`Generated ${data.total} leads successfully.`, "success");
+    showAlert(
+      `Generated ${data.total} leads from ${data.locations_searched} location(s) and ${data.categories_searched} category(ies).`,
+      "success"
+    );
   } catch (error) {
     showAlert(error.message || "Something went wrong while generating leads.");
     renderLeads({ leads: [], total: 0, query_used: "", location_used: "" });
   } finally {
     setLoading(false);
+    setTimeout(hideBatchProgress, 1200);
   }
 }
 
@@ -677,9 +884,33 @@ radiusKm.addEventListener("input", () => {
 
 maxResults.addEventListener("input", () => {
   maxResultsLabel.textContent = maxResults.value;
+  updateBatchEstimate();
 });
 
-categoryId.addEventListener("change", updateCategoryUI);
+categoryId.addEventListener("change", () => {
+  updateCategoryUI();
+  updateBatchEstimate();
+});
+
+multiCategoryToggle.addEventListener("change", () => {
+  categoryCheckGrid.hidden = !multiCategoryToggle.checked;
+  categoryId.disabled = multiCategoryToggle.checked;
+  updateBatchEstimate();
+});
+
+categoryCheckGrid.addEventListener("change", updateBatchEstimate);
+
+addLocationBtn.addEventListener("click", addCurrentLocationToQueue);
+
+locationQueue.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-remove-location]");
+  if (!button) return;
+  removeLocationFromQueue(Number(button.dataset.removeLocation));
+});
+
+locationInput.addEventListener("input", () => {
+  updateBatchEstimate();
+});
 
 countrySearch.addEventListener("input", () => {
   renderCountryOptions(countrySearch.value);

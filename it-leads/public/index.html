@@ -45,7 +45,6 @@
               name="location"
               type="text"
               placeholder="Any city worldwide — e.g. Paris, France / Tokyo / New York"
-              required
               autocomplete="off"
             />
             <input id="placeId" name="place_id" type="hidden" value="" />
@@ -54,6 +53,15 @@
 
           <div class="region-tabs" id="regionTabs"></div>
           <div id="presetLocationGrid" class="preset-grid"></div>
+
+          <div class="location-queue">
+            <div class="location-queue__header">
+              <span>Locations to search <strong id="locationQueueCount">0</strong></span>
+              <button type="button" class="link-btn" id="addLocationBtn">+ Add location</button>
+            </div>
+            <ul id="locationQueue" class="location-queue__list"></ul>
+            <small class="hint">Add up to 10 locations — generate leads from all at once.</small>
+          </div>
 
           <label class="field">
             <span>Search radius: <strong id="radiusLabel">10 km</strong></span>
@@ -70,6 +78,13 @@
             <small id="categoryHint" class="hint"></small>
           </label>
 
+          <label class="field checkbox-field">
+            <input type="checkbox" id="multiCategoryToggle" />
+            <span>Search multiple categories at once</span>
+          </label>
+
+          <div id="categoryCheckGrid" class="category-grid" hidden></div>
+
           <label class="field" id="customQueryField" hidden>
             <span>Custom keyword</span>
             <input
@@ -81,13 +96,19 @@
           </label>
 
           <label class="field">
-            <span>Max results: <strong id="maxResultsLabel">20</strong></span>
+            <span>Max leads per search: <strong id="maxResultsLabel">20</strong></span>
             <input id="maxResults" name="max_results" type="range" min="5" max="60" step="5" value="20" />
+            <small class="hint" id="batchEstimate">1 location × 1 category = up to 20 leads</small>
           </label>
         </section>
 
+        <div id="batchProgress" class="batch-progress" hidden>
+          <div class="batch-progress__bar"><span id="batchProgressFill"></span></div>
+          <p id="batchProgressText">Generating leads…</p>
+        </div>
+
         <button type="submit" class="btn btn--primary" id="searchBtn">
-          <span class="btn__text">Generate Leads</span>
+          <span class="btn__text">Generate All Leads</span>
           <span class="btn__loader" hidden></span>
         </button>
       </form>
@@ -125,7 +146,8 @@
         <ul class="feature-list">
           <li>190+ countries — search anywhere in the world</li>
           <li>Any city, state, or address worldwide</li>
-          <li>Export to CSV, Excel, JSON or TXT</li>
+          <li>Generate from multiple locations &amp; categories in one run</li>
+          <li>Up to 500 leads per batch (10 locations × 5 categories)</li>
           <li>Phone, website, address, ratings &amp; hours</li>
         </ul>
       </section>
@@ -136,6 +158,14 @@
           <strong id="statTotal">0</strong>
         </div>
         <div class="stat">
+          <span class="stat__label">Locations</span>
+          <strong id="statLocations">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Categories</span>
+          <strong id="statCategories">0</strong>
+        </div>
+        <div class="stat">
           <span class="stat__label">With phone</span>
           <strong id="statPhone">0</strong>
         </div>
@@ -143,10 +173,11 @@
           <span class="stat__label">With website</span>
           <strong id="statWebsite">0</strong>
         </div>
-        <div class="stat">
-          <span class="stat__label">Query</span>
-          <strong id="statQuery">—</strong>
-        </div>
+      </section>
+
+      <section id="breakdownBar" class="breakdown-bar" hidden>
+        <h3>Search breakdown</h3>
+        <ul id="breakdownList"></ul>
       </section>
 
       <div id="tableWrap" class="table-wrap" hidden>
@@ -155,12 +186,12 @@
             <tr>
               <th>#</th>
               <th>Business</th>
+              <th>Search Location</th>
               <th>Category</th>
               <th>Phone</th>
               <th>Website</th>
               <th>Address</th>
               <th>Rating</th>
-              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
