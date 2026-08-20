@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="IT Lead Gen" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>IT Maps Lead Generator | Google Maps Business Leads</title>
+  <meta name="description" content="Generate qualified business leads from Google Maps for your IT services company. Select locations, categories, and export full contact details." />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/static/icons/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__icon" aria-hidden="true">⚡</div>
+        <div>
+          <h1>IT Lead Gen</h1>
+          <p>Google Maps Lead Generator</p>
+        </div>
+      </div>
+
+      <form id="searchForm" class="search-form">
+        <section class="panel">
+          <h2>Location <span class="panel__badge">Worldwide</span></h2>
+
+          <label class="field">
+            <span>Country filter (optional)</span>
+            <input
+              id="countrySearch"
+              type="text"
+              placeholder="Search 190+ countries…"
+              autocomplete="off"
+            />
+            <select id="countryCode" name="country_code" size="6" class="country-select"></select>
+            <small class="hint">Choose <strong>Worldwide</strong> to search any country, or filter to one country.</small>
+          </label>
+
+          <label class="field location-field">
+            <span>City / Area / Address</span>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              placeholder="Any city worldwide — e.g. Paris, France / Tokyo / New York"
+              autocomplete="off"
+            />
+            <input id="placeId" name="place_id" type="hidden" value="" />
+            <ul id="locationSuggestions" class="suggestions" hidden></ul>
+          </label>
+
+          <div class="region-tabs" id="regionTabs"></div>
+          <div id="presetLocationGrid" class="preset-grid"></div>
+
+          <div class="location-queue">
+            <div class="location-queue__header">
+              <span>Locations to search <strong id="locationQueueCount">0</strong></span>
+              <button type="button" class="link-btn" id="addLocationBtn">+ Add location</button>
+            </div>
+            <ul id="locationQueue" class="location-queue__list"></ul>
+            <small class="hint">Add up to 10 locations — generate leads from all at once.</small>
+          </div>
+
+          <label class="field">
+            <span>Search radius: <strong id="radiusLabel">10 km</strong></span>
+            <input id="radiusKm" name="radius_km" type="range" min="1" max="50" value="10" />
+          </label>
+        </section>
+
+        <section class="panel">
+          <h2>Business Type</h2>
+
+          <label class="field">
+            <span>Lead category</span>
+            <select id="categoryId" name="category_id"></select>
+            <small id="categoryHint" class="hint"></small>
+          </label>
+
+          <label class="field checkbox-field">
+            <input type="checkbox" id="multiCategoryToggle" />
+            <span>Search multiple categories at once</span>
+          </label>
+
+          <div id="categoryCheckGrid" class="category-grid" hidden></div>
+
+          <label class="field" id="customQueryField" hidden>
+            <span>Custom keyword</span>
+            <input
+              id="customQuery"
+              name="custom_query"
+              type="text"
+              placeholder="e.g. software company, CA firm, hospital"
+            />
+          </label>
+
+          <label class="field">
+            <span>Max leads per search: <strong id="maxResultsLabel">20</strong></span>
+            <input id="maxResults" name="max_results" type="range" min="5" max="60" step="5" value="20" />
+            <small class="hint" id="batchEstimate">1 location × 1 category = up to 20 leads</small>
+          </label>
+        </section>
+
+        <div id="batchProgress" class="batch-progress" hidden>
+          <div class="batch-progress__bar"><span id="batchProgressFill"></span></div>
+          <p id="batchProgressText">Generating leads…</p>
+        </div>
+
+        <button type="submit" class="btn btn--primary" id="searchBtn">
+          <span class="btn__text">Generate All Leads</span>
+          <span class="btn__loader" hidden></span>
+        </button>
+      </form>
+
+      <div class="sidebar__footer">
+        <div id="apiStatus" class="status status--warn">Checking API…</div>
+        <p class="footnote">Uses Google Places API. Add your API key in <code>.env</code>.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="toolbar">
+        <div>
+          <h2 id="resultsTitle">Your Leads</h2>
+          <p id="resultsMeta">Select a location and category, then generate leads.</p>
+        </div>
+        <div class="toolbar__actions">
+          <button type="button" class="btn btn--primary" id="downloadBtn" disabled>
+            ⬇ Download Leads
+          </button>
+          <button type="button" class="btn btn--ghost" id="copyBtn" disabled>Copy All</button>
+        </div>
+      </header>
+
+      <div id="alert" class="alert" hidden></div>
+
+      <div id="platformBanner" class="platform-banner" hidden>
+        <div>
+          <strong id="platformTitle">Works on your device</strong>
+          <p id="platformHint"></p>
+        </div>
+        <button type="button" class="icon-btn" id="dismissPlatformBanner" aria-label="Dismiss">✕</button>
+      </div>
+
+      <section id="emptyState" class="empty-state">
+        <div class="empty-state__icon" aria-hidden="true">🗺️</div>
+        <h3>Find IT service prospects on Google Maps</h3>
+        <p>
+          Choose any city or area, pick a business category (offices, hospitals, schools,
+          retail, and more), and get full lead details — phone, website, address, ratings,
+          and Google Maps links.
+        </p>
+        <ul class="feature-list">
+          <li>190+ countries — search anywhere in the world</li>
+          <li>Any city, state, or address worldwide</li>
+          <li>Generate from multiple locations &amp; categories in one run</li>
+          <li>Up to 500 leads per batch (10 locations × 5 categories)</li>
+          <li>Phone, website, address, ratings &amp; hours</li>
+        </ul>
+      </section>
+
+      <section id="statsBar" class="stats-bar" hidden>
+        <div class="stat">
+          <span class="stat__label">Leads found</span>
+          <strong id="statTotal">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Locations</span>
+          <strong id="statLocations">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Categories</span>
+          <strong id="statCategories">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">With phone</span>
+          <strong id="statPhone">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat__label">With website</span>
+          <strong id="statWebsite">0</strong>
+        </div>
+      </section>
+
+      <section id="breakdownBar" class="breakdown-bar" hidden>
+        <h3>Search breakdown</h3>
+        <ul id="breakdownList"></ul>
+      </section>
+
+      <div id="tableWrap" class="table-wrap" hidden>
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Business</th>
+              <th>Search Location</th>
+              <th>Category</th>
+              <th>Phone</th>
+              <th>Website</th>
+              <th>Address</th>
+              <th>Rating</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+
+      <section id="downloadHistory" class="download-history" hidden>
+        <div class="download-history__header">
+          <h3>Recent Downloads</h3>
+          <button type="button" class="link-btn" id="clearHistoryBtn">Clear history</button>
+        </div>
+        <ul id="downloadHistoryList" class="download-history__list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="downloadModal" class="modal modal--wide">
+    <form method="dialog" class="modal__inner">
+      <header class="modal__header">
+        <div>
+          <h3>Download Leads</h3>
+          <p id="downloadSubtitle">Choose format and file name</p>
+        </div>
+        <button type="submit" class="icon-btn" aria-label="Close">✕</button>
+      </header>
+
+      <div class="modal__body modal__body--download">
+        <section class="download-section">
+          <h4>File format</h4>
+          <div id="formatGrid" class="format-grid"></div>
+        </section>
+
+        <section class="download-section">
+          <label class="field">
+            <span>File name (optional)</span>
+            <input id="downloadFilename" type="text" placeholder="Auto-generated if left blank" />
+          </label>
+          <p id="downloadPreview" class="download-preview"></p>
+        </section>
+
+        <section class="download-section">
+          <div class="download-section__row">
+            <h4>Columns to include</h4>
+            <div class="download-section__actions">
+              <button type="button" class="link-btn" id="selectAllColumnsBtn">Select all</button>
+              <button type="button" class="link-btn" id="clearColumnsBtn">Clear</button>
+            </div>
+          </div>
+          <div id="columnGrid" class="column-grid"></div>
+        </section>
+
+        <section class="download-section download-summary">
+          <div><span>Leads</span><strong id="downloadLeadCount">0</strong></div>
+          <div><span>With phone</span><strong id="downloadPhoneCount">0</strong></div>
+          <div><span>With website</span><strong id="downloadWebsiteCount">0</strong></div>
+        </section>
+      </div>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" id="downloadCancelBtn">Cancel</button>
+        <button type="button" class="btn btn--primary" id="confirmDownloadBtn">
+          <span class="btn__text">Download File</span>
+          <span class="btn__loader" hidden></span>
+        </button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="leadModal" class="modal">
+    <form method="dialog" class="modal__inner">
+      <header class="modal__header">
+        <div>
+          <h3 id="modalTitle">Lead Details</h3>
+          <p id="modalSubtitle"></p>
+        </div>
+        <button type="submit" class="icon-btn" aria-label="Close">✕</button>
+      </header>
+      <div id="modalBody" class="modal__body"></div>
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" id="modalDownloadBtn">Download Lead</button>
+        <button type="button" class="btn btn--ghost" id="modalMapsBtn">Open in Google Maps</button>
+        <button type="button" class="btn btn--ghost" id="modalCopyBtn">Copy Details</button>
+        <button type="submit" class="btn btn--primary">Close</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="/static/platform.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
