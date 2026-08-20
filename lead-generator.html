@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IT Services Lead Generator | Google Maps Leads</title>
+  <meta
+    name="description"
+    content="Generate IT service leads by business type and location using Google Places API. Export detailed Google Maps leads to CSV."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="assets/css/lead-generator.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a href="index.html" class="topbar__back">← Back to website</a>
+      <span class="topbar__tag">Google Maps Lead Generation for IT Services</span>
+    </div>
+  </header>
+
+  <main class="container page">
+    <section class="hero">
+      <h1>IT Lead Generator</h1>
+      <p>
+        Select lead types and locations, then generate detailed business leads from Google Maps.
+        This tool uses the official Google Places API (no scraping).
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Lead Search Settings</h2>
+      <form id="leadForm" class="form-grid">
+        <div class="field field--full">
+          <label for="apiKey">Google API Key</label>
+          <input
+            id="apiKey"
+            name="apiKey"
+            type="password"
+            autocomplete="off"
+            placeholder="Paste your Google Maps / Places API key"
+            required
+          />
+          <small>
+            Enable Places API and Geocoding API in your Google Cloud project before using this tool.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="leadTypes">Lead types (one per line)</label>
+          <textarea
+            id="leadTypes"
+            name="leadTypes"
+            rows="7"
+            required
+          >IT company
+Software company
+Web development company
+Digital marketing agency
+Managed IT services
+Cyber security company</textarea>
+        </div>
+
+        <div class="field">
+          <label for="locations">Locations (one per line)</label>
+          <textarea
+            id="locations"
+            name="locations"
+            rows="7"
+            required
+          >Ahmedabad, India
+Surat, India
+Vadodara, India
+Rajkot, India</textarea>
+        </div>
+
+        <div class="field">
+          <label for="radiusKm">Radius (km per location)</label>
+          <input id="radiusKm" name="radiusKm" type="number" min="1" max="100" value="20" />
+        </div>
+
+        <div class="field">
+          <label for="maxResults">Maximum total leads</label>
+          <input id="maxResults" name="maxResults" type="number" min="10" max="500" value="120" />
+        </div>
+
+        <div class="field field--full">
+          <label>Details to include in output</label>
+          <div class="checks" id="detailFields">
+            <label><input type="checkbox" value="businessName" checked /> Business name</label>
+            <label><input type="checkbox" value="primaryType" checked /> Primary type</label>
+            <label><input type="checkbox" value="address" checked /> Address</label>
+            <label><input type="checkbox" value="phone" checked /> Phone number</label>
+            <label><input type="checkbox" value="website" checked /> Website</label>
+            <label><input type="checkbox" value="rating" checked /> Rating</label>
+            <label><input type="checkbox" value="reviews" checked /> Review count</label>
+            <label><input type="checkbox" value="businessStatus" checked /> Business status</label>
+            <label><input type="checkbox" value="openNow" checked /> Open now</label>
+            <label><input type="checkbox" value="mapsUrl" checked /> Google Maps URL</label>
+            <label><input type="checkbox" value="latitude" checked /> Latitude</label>
+            <label><input type="checkbox" value="longitude" checked /> Longitude</label>
+            <label><input type="checkbox" value="types" checked /> Place types</label>
+            <label><input type="checkbox" value="leadTypeQuery" checked /> Matched lead type</label>
+            <label><input type="checkbox" value="locationQuery" checked /> Matched location</label>
+            <label><input type="checkbox" value="searchQuery" /> Search query used</label>
+          </div>
+        </div>
+
+        <div class="actions field--full">
+          <button id="generateBtn" type="submit">Generate Leads</button>
+          <button id="downloadCsvBtn" type="button" disabled>Download CSV</button>
+        </div>
+      </form>
+
+      <p class="status" id="statusText" aria-live="polite"></p>
+      <p class="notice">
+        Important: Respect Google's API terms, pricing and your local data privacy requirements before contacting leads.
+      </p>
+    </section>
+
+    <section class="panel">
+      <div class="results-head">
+        <h2>Generated Leads</h2>
+        <span id="leadCount">0 leads</span>
+      </div>
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead></thead>
+          <tbody>
+            <tr>
+              <td class="empty">No leads generated yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/lead-generator.js"></script>
+</body>
+</html>

@@ -17,6 +17,7 @@ GoMechanic, adapted to KB Garage's black & gold brand and services.
 - Booking / contact section with business details
 - Booking forms that open **WhatsApp** with the customer's details pre-filled
 - Floating WhatsApp & Call buttons + a back-to-top button
+- Dedicated **Google Maps IT lead generator** page with CSV export (`lead-generator.html`)
 - SEO ready: meta description/keywords, Open Graph & Twitter cards, inline SVG favicon and `AutoRepair` JSON-LD structured data
 - Fully responsive (desktop, tablet, mobile)
 - No build step — pure HTML, CSS and vanilla JS
@@ -34,6 +35,7 @@ GoMechanic, adapted to KB Garage's black & gold brand and services.
 ```
 .
 ├── index.html
+├── lead-generator.html
 ├── robots.txt
 ├── sitemap.xml
 ├── .htaccess               # Hostinger / Apache / LiteSpeed config
@@ -45,9 +47,39 @@ GoMechanic, adapted to KB Garage's black & gold brand and services.
 │   └── deploy.yml          # GitHub Pages CI/CD
 └── assets
     ├── css/styles.css
+    ├── css/lead-generator.css
     ├── js/script.js
+    ├── js/lead-generator.js
     └── img/                # logo + favicon (SVG)
 ```
+
+## Google Maps lead generator (IT services)
+
+Open `lead-generator.html` to generate business leads by lead type and location.
+
+### What it does
+
+- Accepts multiple lead types (one per line), e.g. `Software company`, `Managed IT services`
+- Accepts multiple locations (one per line), e.g. `Ahmedabad, India`
+- Uses Google APIs to fetch detailed business data:
+  - business name, type, address
+  - phone number, website
+  - rating, review count, open/closed status
+  - Google Maps URL and coordinates
+- Exports selected fields to CSV
+
+### API setup required
+
+In Google Cloud Console for your project:
+
+1. Enable **Places API**.
+2. Enable **Geocoding API**.
+3. Create an API key and restrict it (HTTP referrer restrictions + API restrictions).
+4. Paste the key into the tool and click **Generate Leads**.
+
+> Notes:
+> - This implementation uses official Google APIs (not scraping).
+> - Google usage/billing and legal compliance for outreach are your responsibility.
 
 ## Run locally
 
