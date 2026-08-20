@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LeadGen · Google Maps → IT Services Leads</title>
+    <meta name="description" content="Generate B2B leads from Google Maps for any business category and any location. Built for IT services outreach." />
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text x='0' y='20' font-size='20'>📍</text></svg>" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">◆</span>
+        <div>
+          <h1>LeadGen</h1>
+          <p>Google Maps → verified business leads · for IT services outreach</p>
+        </div>
+      </div>
+      <div class="status" id="status">checking API…</div>
+    </header>
+
+    <main>
+      <section class="card search">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="text" role="tab">🔎 Search by keyword + location</button>
+          <button class="tab" data-tab="nearby" role="tab">📍 Radius sweep around a point</button>
+        </div>
+
+        <!-- Text search -->
+        <form id="form-text" class="tabpane active">
+          <div class="row">
+            <label class="grow">
+              <span>What businesses? <em>(any category)</em></span>
+              <input id="q-what" placeholder="e.g. chartered accountants, hospitals, hotels, retail shops…" required />
+            </label>
+            <label class="grow">
+              <span>Where? <em>(any city / area / country)</em></span>
+              <input id="q-where" placeholder="e.g. Ahmedabad, Gujarat, India" required />
+            </label>
+          </div>
+          <div class="row wrap">
+            <label>
+              <span>Country code <em>(optional)</em></span>
+              <input id="q-region" placeholder="IN" maxlength="2" style="width:5.5rem" />
+            </label>
+            <label>
+              <span>Min rating</span>
+              <select id="q-minrating">
+                <option value="">Any</option>
+                <option value="3">3.0+</option>
+                <option value="3.5">3.5+</option>
+                <option value="4">4.0+</option>
+                <option value="4.5">4.5+</option>
+              </select>
+            </label>
+            <label>
+              <span>Max pages (20/page)</span>
+              <select id="q-pages">
+                <option value="1">1 (~20)</option>
+                <option value="2">2 (~40)</option>
+                <option value="3" selected>3 (~60)</option>
+              </select>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="q-open" />
+              <span>Only open now</span>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="q-enrich" checked />
+              <span>Scrape websites for emails & socials</span>
+            </label>
+          </div>
+
+          <div class="presets">
+            <span class="hint">Quick IT-buyer presets:</span>
+            <div id="presets-buyers" class="chipset"></div>
+          </div>
+
+          <button class="primary" type="submit">Generate leads</button>
+        </form>
+
+        <!-- Nearby -->
+        <form id="form-nearby" class="tabpane">
+          <div class="row">
+            <label class="grow">
+              <span>Centre address / place <em>(or leave blank & set lat,lng)</em></span>
+              <input id="n-address" placeholder="e.g. Gota, Ahmedabad" />
+            </label>
+            <label>
+              <span>Latitude</span>
+              <input id="n-lat" placeholder="23.10" />
+            </label>
+            <label>
+              <span>Longitude</span>
+              <input id="n-lng" placeholder="72.53" />
+            </label>
+            <label>
+              <span>Radius (m)</span>
+              <select id="n-radius"></select>
+            </label>
+            <label class="check">
+              <input type="checkbox" id="n-enrich" checked />
+              <span>Scrape websites</span>
+            </label>
+          </div>
+          <div class="presets">
+            <span class="hint">Filter to business types:</span>
+            <div id="presets-types" class="chipset"></div>
+          </div>
+          <button class="primary" type="submit">Sweep this radius</button>
+        </form>
+      </section>
+
+      <section class="card results" id="results-card" hidden>
+        <div class="results-head">
+          <div>
+            <h2 id="results-title">Results</h2>
+            <p class="hint" id="results-sub"></p>
+          </div>
+          <div class="results-actions">
+            <input id="filter" placeholder="Filter table (name, city, category…)" />
+            <button id="btn-csv">Download CSV</button>
+            <button id="btn-json">Download JSON</button>
+            <button id="btn-save">Save run</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Website</th>
+                <th>Address</th>
+                <th>Rating</th>
+                <th>Reviews</th>
+                <th>Socials</th>
+                <th>Map</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card tips">
+        <h3>Getting the most out of this tool</h3>
+        <ul>
+          <li>Use the <b>keyword search</b> for anything a Google user would type (“law firms in Surat”, “hotels in Mumbai”, “schools in Jaipur”).</li>
+          <li>Use the <b>radius sweep</b> when you have a specific pin and want every business of a certain type within X km.</li>
+          <li>Google returns at most ~60 places per text search — for a whole city, split it (e.g. by area: “CAs in Bopal”, “CAs in Satellite”, “CAs in Gota”).</li>
+          <li>Emails are not in Google Maps. The tool tries to pull them from each business's own website (usually finds ~40–60%).</li>
+          <li>Every search uses your Google Cloud quota. Places API (New) has a generous free tier — check billing in Google Cloud.</li>
+        </ul>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "leadgen-google-maps",
+  "version": "1.0.0",
+  "description": "Lead generation tool that pulls businesses from Google Maps (Places API New) for any category and any location. Built for IT services outreach.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
