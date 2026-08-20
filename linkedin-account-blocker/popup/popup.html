@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LinkedIn Account Blocker</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>LinkedIn Account Blocker</h1>
+      <p class="subtitle">
+        Hide posts &amp; profiles of accounts you don't want to see. Local only —
+        nothing is reported to LinkedIn.
+      </p>
+    </header>
+
+    <section class="add-form">
+      <label class="field">
+        <span>Name (as shown on LinkedIn)</span>
+        <input type="text" id="name-input" placeholder="e.g. Jane Doe" />
+      </label>
+      <label class="field">
+        <span>Profile URL or /in/ slug (optional, more precise)</span>
+        <input
+          type="text"
+          id="url-input"
+          placeholder="https://www.linkedin.com/in/jane-doe/"
+        />
+      </label>
+      <button id="add-btn" type="button">Block account</button>
+      <p class="hint" id="form-hint"></p>
+    </section>
+
+    <section class="list-section">
+      <div class="list-header">
+        <h2>Blocked accounts (<span id="count">0</span>)</h2>
+        <button id="clear-btn" type="button" class="link-btn">Clear all</button>
+      </div>
+      <ul id="blocklist" class="blocklist"></ul>
+      <p id="empty-state" class="empty">No accounts blocked yet.</p>
+
+      <div class="backup-row">
+        <button id="export-btn" type="button" class="ghost-btn">
+          Export backup
+        </button>
+        <button id="import-btn" type="button" class="ghost-btn">
+          Import backup
+        </button>
+        <input type="file" id="import-file" accept="application/json" hidden />
+      </div>
+    </section>
+
+    <footer class="footer">
+      Tip: on LinkedIn, click the <strong>Block</strong> button on any post to
+      add its author here instantly.
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+/* LinkedIn Account Blocker - injected styles */
+
+.lab-hidden-post {
+  display: none !important;
+}
+
+.lab-hidden-note {
+  font-family: -apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  font-size: 13px;
+  color: #56687a;
+  background: #f3f6f8;
+  border: 1px solid #e0e6eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lab-show-btn,
+.lab-block-btn {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 16px;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.lab-show-btn {
+  background: #0a66c2;
+  color: #fff;
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.lab-show-btn:hover {
+  background: #004182;
+}
+
+.lab-block-btn {
+  background: #fbeceb;
+  color: #b23c2f;
+  padding: 4px 12px;
+  font-size: 12px;
+  margin-left: auto;
+  align-self: flex-start;
+}
+
+.lab-block-btn:hover {
+  background: #f5c9c4;
+}
