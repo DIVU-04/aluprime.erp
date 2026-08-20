@@ -94,8 +94,9 @@
           <p id="resultsMeta">Select a location and category, then generate leads.</p>
         </div>
         <div class="toolbar__actions">
-          <button type="button" class="btn btn--ghost" id="exportCsvBtn" disabled>Export CSV</button>
-          <button type="button" class="btn btn--ghost" id="exportJsonBtn" disabled>Export JSON</button>
+          <button type="button" class="btn btn--primary" id="downloadBtn" disabled>
+            ⬇ Download Leads
+          </button>
           <button type="button" class="btn btn--ghost" id="copyBtn" disabled>Copy All</button>
         </div>
       </header>
@@ -113,7 +114,7 @@
         <ul class="feature-list">
           <li>20+ business categories for IT sales</li>
           <li>Any location worldwide</li>
-          <li>Export to CSV or JSON</li>
+          <li>Export to CSV, Excel, JSON or TXT</li>
           <li>Phone, website, address, ratings &amp; hours</li>
         </ul>
       </section>
@@ -155,8 +156,68 @@
           <tbody id="leadsBody"></tbody>
         </table>
       </div>
+
+      <section id="downloadHistory" class="download-history" hidden>
+        <div class="download-history__header">
+          <h3>Recent Downloads</h3>
+          <button type="button" class="link-btn" id="clearHistoryBtn">Clear history</button>
+        </div>
+        <ul id="downloadHistoryList" class="download-history__list"></ul>
+      </section>
     </main>
   </div>
+
+  <dialog id="downloadModal" class="modal modal--wide">
+    <form method="dialog" class="modal__inner">
+      <header class="modal__header">
+        <div>
+          <h3>Download Leads</h3>
+          <p id="downloadSubtitle">Choose format and file name</p>
+        </div>
+        <button type="submit" class="icon-btn" aria-label="Close">✕</button>
+      </header>
+
+      <div class="modal__body modal__body--download">
+        <section class="download-section">
+          <h4>File format</h4>
+          <div id="formatGrid" class="format-grid"></div>
+        </section>
+
+        <section class="download-section">
+          <label class="field">
+            <span>File name (optional)</span>
+            <input id="downloadFilename" type="text" placeholder="Auto-generated if left blank" />
+          </label>
+          <p id="downloadPreview" class="download-preview"></p>
+        </section>
+
+        <section class="download-section">
+          <div class="download-section__row">
+            <h4>Columns to include</h4>
+            <div class="download-section__actions">
+              <button type="button" class="link-btn" id="selectAllColumnsBtn">Select all</button>
+              <button type="button" class="link-btn" id="clearColumnsBtn">Clear</button>
+            </div>
+          </div>
+          <div id="columnGrid" class="column-grid"></div>
+        </section>
+
+        <section class="download-section download-summary">
+          <div><span>Leads</span><strong id="downloadLeadCount">0</strong></div>
+          <div><span>With phone</span><strong id="downloadPhoneCount">0</strong></div>
+          <div><span>With website</span><strong id="downloadWebsiteCount">0</strong></div>
+        </section>
+      </div>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" id="downloadCancelBtn">Cancel</button>
+        <button type="button" class="btn btn--primary" id="confirmDownloadBtn">
+          <span class="btn__text">Download File</span>
+          <span class="btn__loader" hidden></span>
+        </button>
+      </footer>
+    </form>
+  </dialog>
 
   <dialog id="leadModal" class="modal">
     <form method="dialog" class="modal__inner">
@@ -169,6 +230,7 @@
       </header>
       <div id="modalBody" class="modal__body"></div>
       <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" id="modalDownloadBtn">Download Lead</button>
         <button type="button" class="btn btn--ghost" id="modalMapsBtn">Open in Google Maps</button>
         <button type="button" class="btn btn--ghost" id="modalCopyBtn">Copy Details</button>
         <button type="submit" class="btn btn--primary">Close</button>

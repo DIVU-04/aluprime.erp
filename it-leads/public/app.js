@@ -1,8 +1,31 @@
+const HISTORY_KEY = "it-leads-download-history";
+const DEFAULT_FORMAT = "csv";
+const DEFAULT_COLUMNS = [
+  "business_name",
+  "category",
+  "phone",
+  "website",
+  "email",
+  "address",
+  "city",
+  "state",
+  "postal_code",
+  "country",
+  "rating",
+  "review_count",
+  "business_status",
+  "opening_hours",
+  "google_maps_url",
+];
+
 const state = {
   config: null,
   leads: [],
   lastSearch: null,
   selectedLead: null,
+  downloadFormat: DEFAULT_FORMAT,
+  selectedColumns: [...DEFAULT_COLUMNS],
+  downloadHistory: [],
 };
 
 const $ = (id) => document.getElementById(id);
@@ -28,8 +51,7 @@ const tableWrap = $("tableWrap");
 const leadsBody = $("leadsBody");
 const resultsTitle = $("resultsTitle");
 const resultsMeta = $("resultsMeta");
-const exportCsvBtn = $("exportCsvBtn");
-const exportJsonBtn = $("exportJsonBtn");
+const downloadBtn = $("downloadBtn");
 const copyBtn = $("copyBtn");
 const leadModal = $("leadModal");
 const modalTitle = $("modalTitle");
@@ -37,6 +59,23 @@ const modalSubtitle = $("modalSubtitle");
 const modalBody = $("modalBody");
 const modalMapsBtn = $("modalMapsBtn");
 const modalCopyBtn = $("modalCopyBtn");
+const modalDownloadBtn = $("modalDownloadBtn");
+const downloadModal = $("downloadModal");
+const downloadSubtitle = $("downloadSubtitle");
+const formatGrid = $("formatGrid");
+const downloadFilename = $("downloadFilename");
+const downloadPreview = $("downloadPreview");
+const columnGrid = $("columnGrid");
+const downloadLeadCount = $("downloadLeadCount");
+const downloadPhoneCount = $("downloadPhoneCount");
+const downloadWebsiteCount = $("downloadWebsiteCount");
+const confirmDownloadBtn = $("confirmDownloadBtn");
+const downloadCancelBtn = $("downloadCancelBtn");
+const selectAllColumnsBtn = $("selectAllColumnsBtn");
+const clearColumnsBtn = $("clearColumnsBtn");
+const downloadHistorySection = $("downloadHistory");
+const downloadHistoryList = $("downloadHistoryList");
+const clearHistoryBtn = $("clearHistoryBtn");
 
 function showAlert(message, type = "error") {
   alertBox.hidden = false;
@@ -54,6 +93,12 @@ function setLoading(isLoading) {
   searchBtn.querySelector(".btn__loader").hidden = !isLoading;
 }
 
+function setDownloadLoading(isLoading) {
+  confirmDownloadBtn.disabled = isLoading;
+  confirmDownloadBtn.querySelector(".btn__text").hidden = isLoading;
+  confirmDownloadBtn.querySelector(".btn__loader").hidden = !isLoading;
+}
+
 function getFormPayload() {
   return {
     category_id: categoryId.value,
@@ -65,10 +110,139 @@ function getFormPayload() {
   };
 }
 
+function getCategoryLabel() {
+  return state.config?.categories?.find((item) => item.id === categoryId.value)?.label || "";
+}
+
+function slugify(value, maxLen = 40) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, maxLen) || "leads"
+  );
+}
+
+function buildAutoFilename(formatId) {
+  const extension = state.config?.download_formats?.find((item) => item.id === formatId)?.extension || formatId;
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const location = slugify(locationInput.value.trim());
+  const category = slugify(getCategoryLabel());
+  return `it-leads-${location}-${category}-${date}.${extension}`;
+}
+
+function updateDownloadPreview() {
+  const custom = downloadFilename.value.trim();
+  downloadPreview.textContent = custom
+    ? `Will save as: ${custom}${custom.includes(".") ? "" : `.${state.downloadFormat === "xlsx" ? "xlsx" : state.downloadFormat}`}`
+    : `Will save as: ${buildAutoFilename(state.downloadFormat)}`;
+}
+
+function loadDownloadHistory() {
+  try {
+    state.downloadHistory = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  } catch {
+    state.downloadHistory = [];
+  }
+  renderDownloadHistory();
+}
+
+function saveDownloadHistory() {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(state.downloadHistory.slice(0, 10)));
+  renderDownloadHistory();
+}
+
+function addDownloadHistory(entry) {
+  state.downloadHistory.unshift(entry);
+  saveDownloadHistory();
+}
+
+function renderDownloadHistory() {
+  const hasHistory = state.downloadHistory.length > 0;
+  downloadHistorySection.hidden = !hasHistory;
+
+  if (!hasHistory) {
+    downloadHistoryList.innerHTML = "";
+    return;
+  }
+
+  downloadHistoryList.innerHTML = state.downloadHistory
+    .map(
+      (item) => `
+        <li class="download-history__item">
+          <div>
+            <strong>${item.filename}</strong>
+            <div class="download-history__meta">
+              ${item.count} leads · ${item.format.toUpperCase()} · ${item.location || "Unknown location"}
+            </div>
+          </div>
+          <span class="download-history__meta">${new Date(item.timestamp).toLocaleString()}</span>
+        </li>
+      `
+    )
+    .join("");
+}
+
 function updateCategoryUI() {
   const selected = state.config?.categories?.find((item) => item.id === categoryId.value);
   categoryHint.textContent = selected?.description || "";
   customQueryField.hidden = categoryId.value !== "custom";
+}
+
+function renderFormatGrid() {
+  const formats = state.config?.download_formats || [];
+  formatGrid.innerHTML = formats
+    .map(
+      (format) => `
+        <button
+          type="button"
+          class="format-card${state.downloadFormat === format.id ? " format-card--active" : ""}"
+          data-format="${format.id}"
+        >
+          <strong>${format.label}</strong>
+          <span>${format.description}</span>
+        </button>
+      `
+    )
+    .join("");
+}
+
+function renderColumnGrid() {
+  const fields = state.config?.lead_fields || [];
+  columnGrid.innerHTML = fields
+    .map(
+      (field) => `
+        <label class="column-option">
+          <input
+            type="checkbox"
+            value="${field.key}"
+            ${state.selectedColumns.includes(field.key) ? "checked" : ""}
+          />
+          ${field.label}
+        </label>
+      `
+    )
+    .join("");
+}
+
+function updateDownloadModalStats() {
+  downloadLeadCount.textContent = String(state.leads.length);
+  downloadPhoneCount.textContent = String(state.leads.filter((lead) => lead.phone).length);
+  downloadWebsiteCount.textContent = String(state.leads.filter((lead) => lead.website).length);
+  downloadSubtitle.textContent = `${state.leads.length} leads ready to download`;
+  updateDownloadPreview();
+}
+
+function openDownloadModal() {
+  if (!state.leads.length) return;
+  renderFormatGrid();
+  renderColumnGrid();
+  updateDownloadModalStats();
+  downloadFilename.value = "";
+  downloadModal.showModal();
 }
 
 function populateConfig(config) {
@@ -126,8 +300,7 @@ function renderLeads(data) {
   statsBar.hidden = !hasLeads;
   tableWrap.hidden = !hasLeads;
 
-  exportCsvBtn.disabled = !hasLeads;
-  exportJsonBtn.disabled = !hasLeads;
+  downloadBtn.disabled = !hasLeads;
   copyBtn.disabled = !hasLeads;
 
   if (!hasLeads) {
@@ -192,6 +365,83 @@ function leadToText(lead) {
   ].join("\n");
 }
 
+function triggerBrowserDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function getFilenameFromResponse(response, fallback) {
+  const disposition = response.headers.get("Content-Disposition") || "";
+  const match = disposition.match(/filename="([^"]+)"/);
+  return match?.[1] || fallback;
+}
+
+function getSelectedColumnsFromUI() {
+  return [...columnGrid.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
+}
+
+async function downloadLeads({ leads, format, filename = "", columns = state.selectedColumns }) {
+  if (!leads.length) {
+    showAlert("No leads available to download.");
+    return;
+  }
+
+  if (!columns.length) {
+    showAlert("Select at least one column to include in the download.");
+    return;
+  }
+
+  setDownloadLoading(true);
+
+  try {
+    const payload = {
+      format,
+      leads,
+      filename,
+      location: locationInput.value.trim(),
+      category: getCategoryLabel(),
+      query_used: state.lastSearch?.query_used || "",
+      columns,
+    };
+
+    const response = await fetch("/api/download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.detail || "Download failed.");
+    }
+
+    const blob = await response.blob();
+    const resolvedFilename = getFilenameFromResponse(response, buildAutoFilename(format));
+    triggerBrowserDownload(blob, resolvedFilename);
+
+    addDownloadHistory({
+      filename: resolvedFilename,
+      format,
+      count: leads.length,
+      location: locationInput.value.trim(),
+      timestamp: new Date().toISOString(),
+    });
+
+    showAlert(`Downloaded ${leads.length} leads as ${format.toUpperCase()}.`, "success");
+    downloadModal.close();
+  } catch (error) {
+    showAlert(error.message || "Something went wrong while downloading leads.");
+  } finally {
+    setDownloadLoading(false);
+  }
+}
+
 function openLeadModal(lead) {
   state.selectedLead = lead;
   modalTitle.textContent = lead.business_name || "Lead Details";
@@ -218,8 +468,12 @@ function openLeadModal(lead) {
   ];
 
   modalBody.innerHTML = fields
-    .map(([label, value], index) => {
-      const full = label === "Opening Hours" || label === "Address" || label === "Description" || label === "All Types";
+    .map(([label, value]) => {
+      const full =
+        label === "Opening Hours" ||
+        label === "Address" ||
+        label === "Description" ||
+        label === "All Types";
       return `
         <div class="detail${full ? " detail--full" : ""}">
           <span>${label}</span>
@@ -236,6 +490,15 @@ function openLeadModal(lead) {
   modalCopyBtn.onclick = async () => {
     await navigator.clipboard.writeText(leadToText(lead));
     showAlert("Lead details copied to clipboard.", "success");
+  };
+
+  modalDownloadBtn.onclick = () => {
+    downloadLeads({
+      leads: [lead],
+      format: "txt",
+      filename: slugify(lead.business_name || "lead"),
+      columns: DEFAULT_COLUMNS,
+    });
   };
 
   leadModal.showModal();
@@ -273,33 +536,6 @@ async function searchLeads() {
   }
 }
 
-async function exportLeads(format) {
-  if (!state.leads.length) return;
-
-  const endpoint = format === "csv" ? "/api/export/csv" : "/api/export/json";
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(getFormPayload()),
-  });
-
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    showAlert(data.detail || `Export to ${format.toUpperCase()} failed.`);
-    return;
-  }
-
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  const locationSlug = locationInput.value.trim().replace(/[^\w]+/g, "-").slice(0, 30);
-  link.href = url;
-  link.download = `it-leads-${locationSlug}.${format}`;
-  link.click();
-  URL.revokeObjectURL(url);
-  showAlert(`Exported ${state.leads.length} leads as ${format.toUpperCase()}.`, "success");
-}
-
 async function copyAllLeads() {
   if (!state.leads.length) return;
   const text = state.leads.map(leadToText).join("\n\n---\n\n");
@@ -329,9 +565,56 @@ leadsBody.addEventListener("click", (event) => {
   if (lead) openLeadModal(lead);
 });
 
-exportCsvBtn.addEventListener("click", () => exportLeads("csv"));
-exportJsonBtn.addEventListener("click", () => exportLeads("json"));
+downloadBtn.addEventListener("click", openDownloadModal);
 copyBtn.addEventListener("click", copyAllLeads);
+
+formatGrid.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-format]");
+  if (!card) return;
+  state.downloadFormat = card.dataset.format;
+  renderFormatGrid();
+  updateDownloadPreview();
+});
+
+downloadFilename.addEventListener("input", updateDownloadPreview);
+
+columnGrid.addEventListener("change", () => {
+  state.selectedColumns = getSelectedColumnsFromUI();
+});
+
+selectAllColumnsBtn.addEventListener("click", () => {
+  columnGrid.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+    input.checked = true;
+  });
+  state.selectedColumns = getSelectedColumnsFromUI();
+});
+
+clearColumnsBtn.addEventListener("click", () => {
+  columnGrid.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+    input.checked = false;
+  });
+  state.selectedColumns = [];
+});
+
+confirmDownloadBtn.addEventListener("click", () => {
+  const columns = getSelectedColumnsFromUI();
+  downloadLeads({
+    leads: state.leads,
+    format: state.downloadFormat,
+    filename: downloadFilename.value.trim(),
+    columns,
+  });
+});
+
+downloadCancelBtn.addEventListener("click", () => downloadModal.close());
+
+clearHistoryBtn.addEventListener("click", () => {
+  state.downloadHistory = [];
+  localStorage.removeItem(HISTORY_KEY);
+  renderDownloadHistory();
+});
+
+loadDownloadHistory();
 
 fetchConfig()
   .then(populateConfig)

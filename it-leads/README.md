@@ -2,6 +2,43 @@
 
 Generate **business leads from Google Maps** for your IT services company. Select any location, choose from 20+ business categories, and export full contact details.
 
+## Download system
+
+After generating leads, click **Download Leads** to open the download panel:
+
+| Format | Best for |
+|--------|----------|
+| **CSV** | Excel, Google Sheets, CRM import |
+| **Excel (.xlsx)** | Formatted spreadsheet with styled headers |
+| **JSON** | Apps, automation, custom CRM pipelines |
+| **Text (.txt)** | Quick readable list for sharing |
+
+### Download features
+
+- **Instant download** — uses your current search results (no extra Google API calls)
+- **Custom file name** — or auto-generated with location, category, and date
+- **Choose columns** — pick exactly which fields to include
+- **Single lead download** — download one lead as text from the detail view
+- **Download history** — last 10 downloads saved in your browser
+
+### API
+
+```http
+POST /api/download
+Content-Type: application/json
+
+{
+  "format": "xlsx",
+  "leads": [ ... ],
+  "filename": "my-leads",
+  "location": "Ahmedabad, Gujarat",
+  "category": "Offices & Corporate",
+  "columns": ["business_name", "phone", "website", "address"]
+}
+```
+
+Supported formats: `csv`, `xlsx`, `json`, `txt`
+
 ## What you get for each lead
 
 | Field | Description |
