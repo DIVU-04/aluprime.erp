@@ -50,6 +50,12 @@ function safeUrl(value) {
   }
 }
 
+function displayHostname(value) {
+  const safe = safeUrl(value);
+  if (safe === "#") return "No website listed";
+  return new URL(safe).hostname;
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
@@ -180,7 +186,7 @@ function renderLeads() {
           <td>
             <div class="contact-cell">
               <strong>${escapeHtml(lead.phone || lead.international_phone || "No phone listed")}</strong>
-              <span>${escapeHtml(lead.website ? new URL(safeUrl(lead.website)).hostname : "No website listed")}</span>
+              <span>${escapeHtml(displayHostname(lead.website))}</span>
             </div>
           </td>
           <td>
@@ -273,7 +279,7 @@ function openLeadDialog(lead) {
       ${detailItem("Category", lead.category)}
       ${detailItem("Lead score", `${lead.score}/100`)}
       ${detailItem("Phone", lead.phone || lead.international_phone)}
-      ${detailItem("Website", lead.website ? new URL(safeUrl(lead.website)).hostname : "Not listed", false, safeUrl(lead.website))}
+      ${detailItem("Website", displayHostname(lead.website), false, lead.website ? safeUrl(lead.website) : null)}
       ${detailItem("Rating", lead.rating ? `${lead.rating} from ${lead.review_count} reviews` : "Not rated")}
       ${detailItem("Business status", lead.business_status?.replaceAll("_", " "))}
       ${detailItem("Address", lead.address, true)}
