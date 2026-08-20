@@ -24,25 +24,36 @@
 
       <form id="searchForm" class="search-form">
         <section class="panel">
-          <h2>Location</h2>
+          <h2>Location <span class="panel__badge">Worldwide</span></h2>
 
           <label class="field">
-            <span>Country</span>
-            <select id="countryCode" name="country_code"></select>
+            <span>Country filter (optional)</span>
+            <input
+              id="countrySearch"
+              type="text"
+              placeholder="Search 190+ countries…"
+              autocomplete="off"
+            />
+            <select id="countryCode" name="country_code" size="6" class="country-select"></select>
+            <small class="hint">Choose <strong>Worldwide</strong> to search any country, or filter to one country.</small>
           </label>
 
-          <label class="field">
-            <span>City / Area</span>
+          <label class="field location-field">
+            <span>City / Area / Address</span>
             <input
               id="location"
               name="location"
               type="text"
-              list="presetLocations"
-              placeholder="e.g. Ahmedabad, Gujarat"
+              placeholder="Any city worldwide — e.g. Paris, France / Tokyo / New York"
               required
+              autocomplete="off"
             />
-            <datalist id="presetLocations"></datalist>
+            <input id="placeId" name="place_id" type="hidden" value="" />
+            <ul id="locationSuggestions" class="suggestions" hidden></ul>
           </label>
+
+          <div class="region-tabs" id="regionTabs"></div>
+          <div id="presetLocationGrid" class="preset-grid"></div>
 
           <label class="field">
             <span>Search radius: <strong id="radiusLabel">10 km</strong></span>
@@ -112,8 +123,8 @@
           and Google Maps links.
         </p>
         <ul class="feature-list">
-          <li>20+ business categories for IT sales</li>
-          <li>Any location worldwide</li>
+          <li>190+ countries — search anywhere in the world</li>
+          <li>Any city, state, or address worldwide</li>
           <li>Export to CSV, Excel, JSON or TXT</li>
           <li>Phone, website, address, ratings &amp; hours</li>
         </ul>

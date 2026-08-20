@@ -2,6 +2,24 @@
 
 Generate **business leads from Google Maps** for your IT services company. Select any location, choose from 20+ business categories, and export full contact details.
 
+## Location coverage
+
+Search **any location worldwide**:
+
+- **190+ countries** in the country filter (or choose **Worldwide** for no limit)
+- **Type any city, state, or address** — Paris, Tokyo, New York, Dubai, Sydney, etc.
+- **Location autocomplete** powered by Google Maps (suggestions as you type)
+- **Quick-pick cities** grouped by region: Asia, Europe, Americas, Middle East & Africa, Oceania
+
+Examples you can search:
+- `London, UK`
+- `New York, NY, USA`
+- `Dubai, UAE`
+- `Singapore`
+- `Berlin, Germany`
+- `São Paulo, Brazil`
+- Any small town or neighborhood worldwide
+
 ## Download system
 
 After generating leads, click **Download Leads** to open the download panel:

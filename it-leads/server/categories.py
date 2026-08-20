@@ -142,37 +142,3 @@ IT_LEAD_CATEGORIES = [
         "description": "Enter your own business type or keyword",
     },
 ]
-
-INDIAN_CITIES = [
-    "Ahmedabad, Gujarat",
-    "Mumbai, Maharashtra",
-    "Delhi, India",
-    "Bangalore, Karnataka",
-    "Hyderabad, Telangana",
-    "Chennai, Tamil Nadu",
-    "Pune, Maharashtra",
-    "Kolkata, West Bengal",
-    "Surat, Gujarat",
-    "Jaipur, Rajasthan",
-    "Lucknow, Uttar Pradesh",
-    "Chandigarh, India",
-    "Indore, Madhya Pradesh",
-    "Nagpur, Maharashtra",
-    "Vadodara, Gujarat",
-    "Rajkot, Gujarat",
-    "Bhopal, Madhya Pradesh",
-    "Coimbatore, Tamil Nadu",
-    "Kochi, Kerala",
-    "Goa, India",
-]
-
-COUNTRIES = [
-    {"code": "IN", "name": "India"},
-    {"code": "US", "name": "United States"},
-    {"code": "GB", "name": "United Kingdom"},
-    {"code": "AE", "name": "United Arab Emirates"},
-    {"code": "CA", "name": "Canada"},
-    {"code": "AU", "name": "Australia"},
-    {"code": "SG", "name": "Singapore"},
-    {"code": "DE", "name": "Germany"},
-]

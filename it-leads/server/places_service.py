@@ -148,7 +148,13 @@ def normalize_place(place: dict[str, Any], *, include_summary: bool = False) -> 
     return lead
 
 
-async def geocode_location(client: httpx.AsyncClient, location: str, country_code: str) -> dict[str, Any]:
+async def geocode_location(
+    client: httpx.AsyncClient,
+    location: str,
+    country_code: str,
+    *,
+    place_id: str = "",
+) -> dict[str, Any]:
     key = settings.google_maps_api_key.strip()
     if not key:
         raise PlacesError(
@@ -156,12 +162,12 @@ async def geocode_location(client: httpx.AsyncClient, location: str, country_cod
             status_code=503,
         )
 
-    params = {
-        "address": location,
-        "key": key,
-    }
-    if country_code:
-        params["components"] = f"country:{country_code.upper()}"
+    if place_id:
+        params = {"place_id": place_id, "key": key}
+    else:
+        params = {"address": location, "key": key}
+        if country_code:
+            params["components"] = f"country:{country_code.upper()}"
 
     response = await client.get("https://maps.googleapis.com/maps/api/geocode/json", params=params)
     payload = response.json()
@@ -183,6 +189,81 @@ async def geocode_location(client: httpx.AsyncClient, location: str, country_cod
     }
 
 
+async def autocomplete_locations(
+    query: str,
+    country_code: str = "",
+    *,
+    limit: int = 8,
+) -> list[dict[str, str]]:
+    query = query.strip()
+    if len(query) < 2:
+        return []
+
+    body: dict[str, Any] = {
+        "input": query,
+        "includedPrimaryTypes": [
+            "locality",
+            "administrative_area_level_1",
+            "administrative_area_level_2",
+            "administrative_area_level_3",
+            "country",
+            "postal_code",
+            "sublocality",
+        ],
+    }
+    if country_code:
+        body["includedRegionCodes"] = [country_code.upper()]
+
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        response = await client.post(
+            f"{PLACES_BASE}/places:autocomplete",
+            headers=_headers(
+                "suggestions.placePrediction.placeId,"
+                "suggestions.placePrediction.text,"
+                "suggestions.placePrediction.structuredFormat,"
+                "suggestions.placePrediction.types"
+            ),
+            json=body,
+        )
+
+        if response.status_code >= 400:
+            detail = response.text
+            try:
+                detail = response.json().get("error", {}).get("message", detail)
+            except Exception:
+                pass
+            raise PlacesError(f"Location search failed: {detail}", status_code=response.status_code)
+
+        suggestions: list[dict[str, str]] = []
+        for item in response.json().get("suggestions") or []:
+            prediction = item.get("placePrediction") or {}
+            place_id = prediction.get("placeId") or ""
+            text = _text(prediction.get("text"))
+            structured = prediction.get("structuredFormat") or {}
+            main_text = _text(structured.get("mainText")) or text
+            secondary_text = _text(structured.get("secondaryText"))
+            label = text or main_text
+            if secondary_text and secondary_text not in label:
+                label = f"{main_text}, {secondary_text}" if main_text else secondary_text
+
+            if not label:
+                continue
+
+            suggestions.append(
+                {
+                    "place_id": place_id,
+                    "label": label,
+                    "main_text": main_text,
+                    "secondary_text": secondary_text,
+                }
+            )
+
+            if len(suggestions) >= limit:
+                break
+
+        return suggestions
+
+
 async def search_places(
     *,
     query: str,
@@ -190,9 +271,10 @@ async def search_places(
     country_code: str,
     radius_meters: int,
     max_results: int,
+    place_id: str = "",
 ) -> list[dict[str, Any]]:
     async with httpx.AsyncClient(timeout=60.0) as client:
-        geo = await geocode_location(client, location, country_code)
+        geo = await geocode_location(client, location, country_code, place_id=place_id)
 
         body: dict[str, Any] = {
             "textQuery": query,

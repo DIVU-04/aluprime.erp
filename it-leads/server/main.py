@@ -9,7 +9,8 @@ from fastapi.responses import FileResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from server.categories import COUNTRIES, INDIAN_CITIES, IT_LEAD_CATEGORIES
+from server.categories import IT_LEAD_CATEGORIES
+from server.locations import COUNTRIES, PRESET_LOCATIONS, REGIONS
 from server.config import settings
 from server.exporter import (
     DOWNLOAD_FORMATS,
@@ -19,7 +20,7 @@ from server.exporter import (
     leads_to_csv,
     leads_to_json,
 )
-from server.places_service import PlacesError, get_place_details, search_places
+from server.places_service import PlacesError, autocomplete_locations, get_place_details, search_places
 
 ROOT = Path(__file__).resolve().parent.parent
 PUBLIC = ROOT / "public"
@@ -43,7 +44,8 @@ class SearchRequest(BaseModel):
     category_id: str = Field(default="offices")
     custom_query: str = Field(default="", max_length=200)
     location: str = Field(..., min_length=2, max_length=200)
-    country_code: str = Field(default="IN", min_length=2, max_length=2)
+    country_code: str = Field(default="", max_length=2)
+    place_id: str = Field(default="", max_length=120)
     radius_km: float = Field(default=10, ge=0.5, le=50)
     max_results: int = Field(default=20, ge=1, le=60)
 
@@ -80,8 +82,10 @@ async def get_config() -> dict[str, Any]:
         "api_configured": bool(settings.google_maps_api_key.strip()),
         "default_country": settings.default_country,
         "categories": IT_LEAD_CATEGORIES,
-        "preset_locations": INDIAN_CITIES,
+        "regions": REGIONS,
+        "preset_locations": PRESET_LOCATIONS,
         "countries": COUNTRIES,
+        "worldwide_enabled": True,
         "lead_fields": [{"key": key, "label": label} for key, label in LEAD_COLUMNS],
         "download_formats": DOWNLOAD_FORMATS,
         "max_results_limit": 60,
@@ -162,13 +166,18 @@ async def search_leads(payload: SearchRequest) -> SearchResponse:
     if not location:
         raise HTTPException(status_code=400, detail="Location is required.")
 
+    country = payload.country_code.strip().upper()
+    if country and len(country) != 2:
+        raise HTTPException(status_code=400, detail="Country code must be 2 letters or Worldwide.")
+
     try:
         leads = await search_places(
             query=query,
             location=location,
-            country_code=payload.country_code.upper(),
+            country_code=country,
             radius_meters=int(payload.radius_km * 1000),
             max_results=payload.max_results,
+            place_id=payload.place_id.strip(),
         )
     except PlacesError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
@@ -180,6 +189,23 @@ async def search_leads(payload: SearchRequest) -> SearchResponse:
         leads=leads,
         columns=[{"key": key, "label": label} for key, label in LEAD_COLUMNS if key != "description"],
     )
+
+
+@app.get("/api/locations/autocomplete")
+async def location_autocomplete(
+    query: str = Query(..., min_length=2, max_length=120),
+    country_code: str = Query(default="", max_length=2),
+) -> dict[str, Any]:
+    country = country_code.strip().upper()
+    if country and len(country) != 2:
+        raise HTTPException(status_code=400, detail="Country code must be 2 letters or empty for worldwide.")
+
+    try:
+        suggestions = await autocomplete_locations(query, country)
+    except PlacesError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+    return {"query": query, "country_code": country, "suggestions": suggestions}
 
 
 @app.get("/api/place/{place_id:path}")
@@ -199,13 +225,15 @@ async def download_leads(payload: DownloadRequest) -> Response:
 @app.post("/api/export/csv")
 async def export_csv(payload: SearchRequest) -> Response:
     query = _resolve_query(payload.category_id, payload.custom_query)
+    country = payload.country_code.strip().upper()
     try:
         leads = await search_places(
             query=query,
             location=payload.location.strip(),
-            country_code=payload.country_code.upper(),
+            country_code=country,
             radius_meters=int(payload.radius_km * 1000),
             max_results=payload.max_results,
+            place_id=payload.place_id.strip(),
         )
     except PlacesError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
@@ -221,13 +249,15 @@ async def export_csv(payload: SearchRequest) -> Response:
 @app.post("/api/export/json")
 async def export_json(payload: SearchRequest) -> Response:
     query = _resolve_query(payload.category_id, payload.custom_query)
+    country = payload.country_code.strip().upper()
     try:
         leads = await search_places(
             query=query,
             location=payload.location.strip(),
-            country_code=payload.country_code.upper(),
+            country_code=country,
             radius_meters=int(payload.radius_km * 1000),
             max_results=payload.max_results,
+            place_id=payload.place_id.strip(),
         )
     except PlacesError as exc:
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc

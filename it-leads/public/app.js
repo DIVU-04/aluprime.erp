@@ -26,14 +26,21 @@ const state = {
   downloadFormat: DEFAULT_FORMAT,
   selectedColumns: [...DEFAULT_COLUMNS],
   downloadHistory: [],
+  activeRegion: "worldwide",
+  allCountries: [],
+  autocompleteTimer: null,
 };
 
 const $ = (id) => document.getElementById(id);
 
 const form = $("searchForm");
 const countryCode = $("countryCode");
+const countrySearch = $("countrySearch");
 const locationInput = $("location");
-const presetLocations = $("presetLocations");
+const placeIdInput = $("placeId");
+const locationSuggestions = $("locationSuggestions");
+const regionTabs = $("regionTabs");
+const presetLocationGrid = $("presetLocationGrid");
 const categoryId = $("categoryId");
 const categoryHint = $("categoryHint");
 const customQueryField = $("customQueryField");
@@ -105,9 +112,129 @@ function getFormPayload() {
     custom_query: customQuery.value.trim(),
     location: locationInput.value.trim(),
     country_code: countryCode.value,
+    place_id: placeIdInput.value.trim(),
     radius_km: Number(radiusKm.value),
     max_results: Number(maxResults.value),
   };
+}
+
+function clearPlaceSelection() {
+  placeIdInput.value = "";
+}
+
+function renderCountryOptions(filter = "") {
+  const query = filter.trim().toLowerCase();
+  const countries = state.allCountries.filter((country) =>
+    !query || country.name.toLowerCase().includes(query) || country.code.toLowerCase().includes(query)
+  );
+
+  const selected = countryCode.value;
+  countryCode.innerHTML = countries
+    .map(
+      (country) =>
+        `<option value="${country.code}"${country.code === selected ? " selected" : ""}>${country.name}</option>`
+    )
+    .join("");
+
+  if (!countries.some((country) => country.code === selected) && countries.length) {
+    countryCode.value = countries[0].code;
+  }
+}
+
+function renderRegionTabs() {
+  const regions = state.config?.regions || [];
+  regionTabs.innerHTML = regions
+    .map(
+      (region) => `
+        <button
+          type="button"
+          class="region-tab${state.activeRegion === region.id ? " region-tab--active" : ""}"
+          data-region="${region.id}"
+        >
+          ${region.label}
+        </button>
+      `
+    )
+    .join("");
+  renderPresetLocations();
+}
+
+function renderPresetLocations() {
+  const presets = state.config?.preset_locations?.[state.activeRegion] || [];
+  presetLocationGrid.innerHTML = presets
+    .map((city) => `<button type="button" class="preset-chip" data-location="${city}">${city}</button>`)
+    .join("");
+}
+
+function hideLocationSuggestions() {
+  locationSuggestions.hidden = true;
+  locationSuggestions.innerHTML = "";
+}
+
+function showLocationSuggestions(items) {
+  if (!items.length) {
+    hideLocationSuggestions();
+    return;
+  }
+
+  locationSuggestions.innerHTML = items
+    .map(
+      (item, index) => `
+        <li>
+          <button type="button" data-suggestion-index="${index}">
+            <span class="suggestion-main">${item.main_text || item.label}</span>
+            ${item.secondary_text ? `<span class="suggestion-sub">${item.secondary_text}</span>` : ""}
+          </button>
+        </li>
+      `
+    )
+    .join("");
+  locationSuggestions.hidden = false;
+  state.locationSuggestions = items;
+}
+
+async function fetchLocationSuggestions(query) {
+  if (query.trim().length < 2) {
+    hideLocationSuggestions();
+    return;
+  }
+
+  const params = new URLSearchParams({
+    query: query.trim(),
+    country_code: countryCode.value || "",
+  });
+
+  try {
+    const response = await fetch(`/api/locations/autocomplete?${params.toString()}`);
+    const data = await response.json();
+    if (!response.ok) {
+      hideLocationSuggestions();
+      return;
+    }
+    showLocationSuggestions(data.suggestions || []);
+  } catch {
+    hideLocationSuggestions();
+  }
+}
+
+function scheduleLocationAutocomplete() {
+  clearPlaceSelection();
+  clearTimeout(state.autocompleteTimer);
+  state.autocompleteTimer = setTimeout(() => {
+    fetchLocationSuggestions(locationInput.value);
+  }, 280);
+}
+
+function selectLocationSuggestion(item) {
+  locationInput.value = item.label;
+  placeIdInput.value = item.place_id || "";
+  hideLocationSuggestions();
+}
+
+function selectPresetLocation(city) {
+  locationInput.value = city;
+  clearPlaceSelection();
+  hideLocationSuggestions();
 }
 
 function getCategoryLabel() {
@@ -247,16 +374,17 @@ function openDownloadModal() {
 
 function populateConfig(config) {
   state.config = config;
+  state.allCountries = config.countries || [];
+  state.activeRegion = config.regions?.[0]?.id || "worldwide";
 
-  countryCode.innerHTML = config.countries
-    .map((country) => `<option value="${country.code}">${country.name}</option>`)
-    .join("");
-  countryCode.value = config.default_country || "IN";
+  renderCountryOptions();
+  countryCode.value = "";
+  countrySearch.value = "";
 
-  presetLocations.innerHTML = config.preset_locations
-    .map((city) => `<option value="${city}"></option>`)
-    .join("");
-  locationInput.value = config.preset_locations[0] || "";
+  const defaultPresets = config.preset_locations?.[state.activeRegion] || [];
+  locationInput.value = defaultPresets[0] || "";
+  clearPlaceSelection();
+  renderRegionTabs();
 
   categoryId.innerHTML = config.categories
     .map((cat) => `<option value="${cat.id}">${cat.label}</option>`)
@@ -266,7 +394,7 @@ function populateConfig(config) {
 
   if (config.api_configured) {
     apiStatus.className = "status status--ok";
-    apiStatus.textContent = "Google Maps API connected";
+    apiStatus.textContent = "Google Maps API connected — search any country worldwide";
   } else {
     apiStatus.className = "status status--warn";
     apiStatus.textContent = "API key missing — copy .env.example to .env and add your key";
@@ -552,6 +680,49 @@ maxResults.addEventListener("input", () => {
 });
 
 categoryId.addEventListener("change", updateCategoryUI);
+
+countrySearch.addEventListener("input", () => {
+  renderCountryOptions(countrySearch.value);
+});
+
+countryCode.addEventListener("change", () => {
+  clearPlaceSelection();
+  scheduleLocationAutocomplete();
+});
+
+locationInput.addEventListener("input", scheduleLocationAutocomplete);
+
+locationInput.addEventListener("focus", () => {
+  if (locationInput.value.trim().length >= 2) {
+    scheduleLocationAutocomplete();
+  }
+});
+
+locationSuggestions.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-suggestion-index]");
+  if (!button) return;
+  const item = state.locationSuggestions?.[Number(button.dataset.suggestionIndex)];
+  if (item) selectLocationSuggestion(item);
+});
+
+regionTabs.addEventListener("click", (event) => {
+  const tab = event.target.closest("[data-region]");
+  if (!tab) return;
+  state.activeRegion = tab.dataset.region;
+  renderRegionTabs();
+});
+
+presetLocationGrid.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-location]");
+  if (!chip) return;
+  selectPresetLocation(chip.dataset.location);
+});
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".location-field")) {
+    hideLocationSuggestions();
+  }
+});
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
