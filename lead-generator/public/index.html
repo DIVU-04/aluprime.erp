@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Generator — Google Maps leads for IT services</title>
+  <meta name="description" content="Generate business leads from Google Maps by lead type and location. Export full contact details to CSV." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8D%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="pin">📍</span>
+      <div>
+        <h1>Lead Generator</h1>
+        <p>Find business leads from Google Maps — any type, any location.</p>
+      </div>
+    </div>
+    <span id="providerBadge" class="badge" title="Active data source">…</span>
+  </header>
+
+  <main>
+    <section class="panel">
+      <form id="leadForm">
+        <div class="grid">
+          <label class="field">
+            <span>Lead type <em>(any business category)</em></span>
+            <input id="type" name="type" placeholder="e.g. restaurants, clinics, law firms, hotels…" required />
+          </label>
+
+          <label class="field">
+            <span>Location <em>(city / area / region)</em></span>
+            <input id="location" name="location" placeholder="e.g. Ahmedabad, Mumbai, New York…" required />
+          </label>
+
+          <label class="field small">
+            <span>Max results</span>
+            <input id="limit" name="limit" type="number" min="1" max="120" value="40" />
+          </label>
+
+          <label class="field small">
+            <span>Data source</span>
+            <select id="provider" name="provider">
+              <option value="google">Google Maps</option>
+              <option value="osm">OpenStreetMap (free)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="chips" id="typeChips" aria-label="Quick lead types"></div>
+
+        <label class="check">
+          <input type="checkbox" id="onlyNoWebsite" />
+          <span>Only show leads <strong>without a website</strong> (great prospects for IT / web-dev services)</span>
+        </label>
+
+        <div class="actions">
+          <button type="submit" id="generateBtn" class="primary">Generate leads</button>
+          <button type="button" id="csvBtn" class="ghost" disabled>Download CSV</button>
+          <button type="button" id="copyBtn" class="ghost" disabled>Copy table</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="status" class="status" hidden></section>
+
+    <section id="resultsWrap" class="panel results" hidden>
+      <div class="results-head">
+        <h2 id="resultsTitle">Results</h2>
+      </div>
+      <div class="table-scroll">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th><th>Category</th><th>Phone</th>
+              <th>Website</th><th>Address</th><th>Rating</th><th>Reviews</th>
+              <th>Hours</th><th>Map</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Use responsibly and in line with each data source's terms of service. Google data requires a Google Places API key.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
