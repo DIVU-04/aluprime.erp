@@ -25,13 +25,18 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  font-family: Inter, system-ui, -apple-system, sans-serif;
+  min-height: -webkit-fill-available;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   line-height: 1.5;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overscroll-behavior-y: none;
 }
 
 code {
@@ -154,6 +159,9 @@ a:hover {
   border-radius: var(--radius-sm);
   padding: 0.72rem 0.85rem;
   font: inherit;
+  font-size: 16px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .field input[type="range"] {
@@ -398,6 +406,9 @@ a:hover {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:disabled {
@@ -501,6 +512,29 @@ a:hover {
 .alert--success {
   background: rgba(34, 197, 94, 0.08);
   color: #bbf7d0;
+}
+
+.platform-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.platform-banner strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.platform-banner p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
 }
 
 .empty-state {
@@ -937,11 +971,66 @@ a:hover {
 }
 
 @media (max-width: 640px) {
+  .main,
+  .sidebar {
+    padding: 1rem;
+  }
+
   .toolbar {
     flex-direction: column;
   }
 
+  .toolbar__actions {
+    width: 100%;
+  }
+
+  .toolbar__actions .btn {
+    flex: 1;
+  }
+
   .stats-bar {
     grid-template-columns: 1fr;
+  }
+
+  .format-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .country-select {
+    min-height: 6.5rem;
+  }
+
+  .modal {
+    width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .modal__inner {
+    max-height: calc(100dvh - 1rem);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal__body {
+    max-height: none;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .leads-table {
+    min-width: 720px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn:not(:disabled):hover {
+    transform: none;
+  }
+
+  .link-btn,
+  .preset-chip,
+  .region-tab,
+  .format-card {
+    min-height: 44px;
   }
 }

@@ -2,6 +2,30 @@
 
 Generate **business leads from Google Maps** for your IT services company. Select any location, choose from 20+ business categories, and export full contact details.
 
+**Compatible with:** Windows · macOS · Ubuntu / Linux · iOS (iPhone/iPad) · Android
+
+Works as a web app in any browser, installable as a PWA on mobile, and runnable locally on desktop.
+
+## Platform support
+
+| Platform | How to run | Browser |
+|----------|------------|---------|
+| **Windows** | Double-click `run.bat` or run `run.ps1` in PowerShell | Chrome, Edge, Firefox |
+| **macOS** | Run `./run.sh` in Terminal | Safari, Chrome |
+| **Ubuntu / Linux** | Run `./run.sh` or `bash scripts/install-ubuntu.sh` | Chrome, Firefox |
+| **iOS (iPhone/iPad)** | Open `http://YOUR-PC-IP:8080` on same Wi-Fi → Share → **Add to Home Screen** | Safari |
+| **Android** | Open `http://YOUR-PC-IP:8080` on same Wi-Fi → Menu → **Install app** | Chrome |
+| **Docker (all OS)** | `docker compose up` | Any browser |
+
+### Mobile install (iOS & Android)
+
+1. Start the app on your PC/Mac (`run.bat`, `run.sh`, or Docker)
+2. On your phone (same Wi-Fi), open the **Network URL** shown in the terminal (e.g. `http://192.168.1.5:8080`)
+3. **iOS:** Safari → Share → Add to Home Screen
+4. **Android:** Chrome → menu → Install app / Add to Home screen
+
+The UI is responsive with touch-friendly buttons, safe-area support for iPhone notch, and no zoom on input focus.
+
 ## Location coverage
 
 Search **any location worldwide**:
@@ -133,23 +157,40 @@ cp .env.example .env
 # GOOGLE_MAPS_API_KEY=AIza...
 ```
 
-### 3. Run
+### 3. Run on your platform
 
+**Windows (CMD):**
+```bat
+run.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+.\run.ps1
+```
+
+**macOS / Ubuntu / Linux:**
 ```bash
 chmod +x run.sh
 ./run.sh
 ```
 
+**Ubuntu first-time setup:**
+```bash
+bash scripts/install-ubuntu.sh
+./run.sh
+```
+
+**Docker (Windows, macOS, Ubuntu, any OS):**
+```bash
+cp .env.example .env
+# add API key to .env
+docker compose up --build
+```
+
 Open **http://localhost:8080** in your browser.
 
-Or manually:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn server.main:app --reload --host 0.0.0.0 --port 8080
-```
+On phone/tablet (same Wi-Fi), use the **Network URL** printed when the server starts.
 
 ## How to use
 

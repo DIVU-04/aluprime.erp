@@ -450,5 +450,19 @@ async def index() -> FileResponse:
     return FileResponse(PUBLIC / "index.html")
 
 
+@app.get("/manifest.webmanifest")
+async def manifest() -> FileResponse:
+    return FileResponse(PUBLIC / "manifest.webmanifest", media_type="application/manifest+json")
+
+
+@app.get("/sw.js")
+async def service_worker() -> FileResponse:
+    return FileResponse(
+        PUBLIC / "sw.js",
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/"},
+    )
+
+
 if PUBLIC.exists():
     app.mount("/static", StaticFiles(directory=PUBLIC), name="static")
